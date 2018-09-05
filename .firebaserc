@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "super-tv-guide"
+    "default": "super-tv-guide",
+    "develop": "super-tv-guide"
   }
 }
