@@ -12,6 +12,7 @@ script:
 - cd $TRAVIS_BUILD_DIR/functions
 - npm install
 - npm run build
+- npm run lint
 after_success:
 - $TRAVIS_BUILD_DIR/.travis/deploy.sh develop
 cache:
