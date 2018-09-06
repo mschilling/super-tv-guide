@@ -4,5 +4,18 @@
     "indexes": "firestore.indexes.json"
   },
   "functions": {
+  },
+  "hosting": {
+    "public": "my-app/build/es5-bundled",
+    "ignore": [
+      "firebase.json",
+      "**/.*"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
   }
 }
