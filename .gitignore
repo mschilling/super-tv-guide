@@ -3,6 +3,8 @@
 lib/
 node_modules/
 **creds**.json
+public/
+.firebase/
 
 # Created by https://www.gitignore.io/api/node,polymer,visualstudiocode
 
