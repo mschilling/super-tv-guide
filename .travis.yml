@@ -1,0 +1,23 @@
+language: node_js
+node_js:
+- '8.6'
+dist: trusty
+before_script:
+- npm list -g polymer-cli --depth=0 || npm install -g polymer-cli
+- npm list -g firebase-tools --depth=0 || npm install -g firebase-tools
+script:
+- npm install
+- polymer build
+- cd functions
+- npm install
+- npm run build
+after_success:
+- $TRAVIS_BUILD_DIR/.travis/deploy.sh develop
+cache:
+  directories:
+  - $(npm config get prefix)/bin/polymer-cli
+  - $(npm config get prefix)/bin/firebase-tools
+  - node_modules
+notifications:
+  email: false
+  webhooks: https://travis.webhooks.m4m.io
