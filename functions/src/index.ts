@@ -1,12 +1,20 @@
-// import * as functions from 'firebase-functions';
+import * as express from 'express';
+import * as cors from 'cors';
 
 import { TVDBManager } from './TVDBManager';
 
+const app = express();
+const router = express.Router();
+
 const tvdb = new TVDBManager();
 
-// Start writing Firebase Functions
-// https://firebase.google.com/docs/functions/typescript
+// Automatically allow cross-origin requests
+app.use(cors({ origin: true }));
 
-// export const helloWorld = functions.https.onRequest((request, response) => {
-//  response.send("Hello from Firebase!");
-// });
+router.get('/ping', (req, res) => {
+  res.json({ result: 'pong', timestamp: new Date().toISOString() });
+});
+
+app.use('/api', router);
+
+export { app as webhooksHandler };
