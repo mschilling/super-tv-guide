@@ -1,3 +1,4 @@
+import * as functions from 'firebase-functions';
 import * as express from 'express';
 import * as cors from 'cors';
 
@@ -17,4 +18,4 @@ router.get('/ping', (req, res) => {
 
 app.use('/api', router);
 
-export { app as webhooksHandler };
+export const api = functions.https.onRequest(app);
