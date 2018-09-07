@@ -40,10 +40,9 @@ class watchlistContent extends PolymerElement{
       this.saveLocally(dataFromNetwork)
       .then(() => {
         this.updateUI(dataFromNetwork); 
-        // Give feedback that data is saved
-        console.log("Data loaded and saved");
+        // TODO: Give feedback that data is saved
       }).catch(err => {
-        // Give feedback that data couldn't be saved
+        // TODO: Give feedback that data couldn't be saved
         console.warn(err);
       });
     }).catch(err => {
@@ -51,19 +50,19 @@ class watchlistContent extends PolymerElement{
       this.loadLocally()
       .then(offlineData => {
         if (!offlineData.length) {
-          // No offline data found
-          console.log("No offline data");
+          // TODO: Give feedback that no offline data has been found
         } else {
           // Offline
           this.updateUI(offlineData); 
-          console.log("Offline, UI updated with IndexedDB data");
+          // TODO: Give feedback that UI has been updated with local data
         }
       });
     });
   }  
 
-  /* Get shows */
+  /* Call API and return JSON data of the shows */
   getShows() {
+
     var request = 'https://us-central1-super-tv-guide.cloudfunctions.net/api/api/feed';
    
     return fetch(request).then(response => {
@@ -76,7 +75,7 @@ class watchlistContent extends PolymerElement{
 
   /* Update the UI */
   updateUI(items) {
-    // Loop through the items in the parameter
+    // Loop through the items send with the parameter
     items.forEach(item => {
       var newItem = document.createElement('div');
       newItem.classList.add("card");
@@ -84,7 +83,6 @@ class watchlistContent extends PolymerElement{
                           '<div>S' + item.seasonnumber + 'E' + item.episodenumber + '</div>';
       this.shadowRoot.appendChild(newItem); // Add the new item to the shadowroot
     });
-    console.log("Function updateUI done");
   }
 
   /* Create IndexedDB */
@@ -106,7 +104,6 @@ class watchlistContent extends PolymerElement{
     return watchlistContent.dbPromise.then(db => {
       const tx = db.transaction('watchlist', 'readwrite');
       const store = tx.objectStore('watchlist');
-      console.log("Data saved to indexedDB");
       return Promise.all(data.map(item => store.put(item)))
       .catch(() => {
         tx.abort();
@@ -125,6 +122,7 @@ class watchlistContent extends PolymerElement{
     });
   }
 
+  /* Clear the database to prevent using too much memory */
   clearDB(){
     if (!('indexedDB' in window)) {return null;}
       return watchlistContent.dbPromise.then(db => {
