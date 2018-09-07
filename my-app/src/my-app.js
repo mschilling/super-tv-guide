@@ -36,9 +36,8 @@ class MyApp extends PolymerElement {
     return html`
       <style>
         :host {
-          --app-primary-color: #4285f4;
-          --app-secondary-color: black;
-
+          --app-primary-color: #B71C1C;
+          --app-secondary-color: white;
           display: block;
         }
 
@@ -68,9 +67,21 @@ class MyApp extends PolymerElement {
         }
 
         .drawer-list a.iron-selected {
-          color: black;
+          color: white;
           font-weight: bold;
         }
+
+        app-drawer {
+          --app-drawer-scrim-background: rgba(0, 0, 0, 0.5);
+          --app-drawer-content-container: {
+            background-color: var(--app-primary-color);
+          }
+        }
+
+        app-toolbar {
+          color: white;
+        }
+
       </style>
 
       <app-location route="{{route}}" url-space-regex="^[[rootPath]]">
@@ -84,9 +95,8 @@ class MyApp extends PolymerElement {
         <app-drawer id="drawer" slot="drawer" swipe-open="[[narrow]]">
           <app-toolbar>Menu</app-toolbar>
           <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
-            <a name="view1" href="[[rootPath]]view1">Overzicht</a>
-            <a name="view2" href="[[rootPath]]view2">Watchlist</a>
-            <a name="view3" href="[[rootPath]]view3">Agenda</a>
+            <a name="view1" href="[[rootPath]]view1">Start</a>
+            <a name="feed" href="[[rootPath]]feed">Feed</a>
           </iron-selector>
         </app-drawer>
 
@@ -102,7 +112,7 @@ class MyApp extends PolymerElement {
 
           <iron-pages selected="[[page]]" attr-for-selected="name" role="main">
             <my-view1 name="view1"></my-view1>
-            <my-view2 name="view2"></my-view2>
+            <my-view2 name="feed"></my-view2>
             <my-view3 name="view3"></my-view3>
             <my-view404 name="view404"></my-view404>
           </iron-pages>
@@ -136,7 +146,7 @@ class MyApp extends PolymerElement {
      // Show 'view1' in that case. And if the page doesn't exist, show 'view404'.
     if (!page) {
       this.page = 'view1';
-    } else if (['view1', 'view2', 'view3'].indexOf(page) !== -1) {
+    } else if (['view1', 'feed', 'view3'].indexOf(page) !== -1) {
       this.page = page;
     } else {
       this.page = 'view404';
@@ -157,7 +167,7 @@ class MyApp extends PolymerElement {
       case 'view1':
         import('./my-view1.js');
         break;
-      case 'view2':
+      case 'feed':
         import('./my-view2.js');
         break;
       case 'view3':
