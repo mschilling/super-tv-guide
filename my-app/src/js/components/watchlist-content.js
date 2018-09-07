@@ -102,6 +102,7 @@ class watchlistContent extends PolymerElement{
   /* Save the watchlist items locally */
   saveLocally(data){
     if (!('indexedDB' in window)) {return null;}
+    this.clearDB();
     return watchlistContent.dbPromise.then(db => {
       const tx = db.transaction('watchlist', 'readwrite');
       const store = tx.objectStore('watchlist');
@@ -122,6 +123,19 @@ class watchlistContent extends PolymerElement{
       const store = tx.objectStore('watchlist');
       return store.getAll();
     });
+  }
+
+  clearDB(){
+    if (!('indexedDB' in window)) {return null;}
+      return watchlistContent.dbPromise.then(db => {
+        const tx = db.transaction('watchlist', 'readwrite');
+        const store = tx.objectStore('watchlist');
+        return store.clear()
+        .catch(() => {
+          tx.abort();
+          throw Error('Objectstore could not be cleared');
+        });
+      });
   }
 
 }
