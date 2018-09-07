@@ -61,8 +61,19 @@ class watchlistContent extends PolymerElement{
             .icon-clock{
               margin-top: 3px;
             }
-            
-
+            #popup{
+              border-radius: 5px;
+              position: fixed;
+              padding: 10px;
+              width: calc(90% - 20px);
+              margin: 0 auto;
+              bottom: 15px;
+              color: white;
+            }
+            .fadeout{
+              opacity: 0;
+              transition: all 0.4s ease-out;
+            }
         </style>
     `;
   }
@@ -81,10 +92,11 @@ class watchlistContent extends PolymerElement{
     .then(dataFromNetwork => {
       this.saveLocally(dataFromNetwork)
       .then(() => {
-        this.updateUI(dataFromNetwork); 
-        // TODO: Give feedback that data is saved
+        this.updateUI(dataFromNetwork);
+        this.setLastUpdated(new Date());
+        this.messageDataSaved();
       }).catch(err => {
-        // TODO: Give feedback that data couldn't be saved
+        this.messageSaveError();
         console.warn(err);
       });
     }).catch(err => {
@@ -92,15 +104,69 @@ class watchlistContent extends PolymerElement{
       this.loadLocally()
       .then(offlineData => {
         if (!offlineData.length) {
-          // TODO: Give feedback that no offline data has been found
+          this.messageNoData();
         } else {
-          // Offline
+          this.messageOffline();
           this.updateUI(offlineData); 
-          // TODO: Give feedback that UI has been updated with local data
         }
       });
     });
-  }  
+  } 
+
+  
+  messageOffline() {
+    // alert user that data may not be current
+    const lastUpdated = this.getLastUpdated();
+    let text = "You're offline and viewing stored data <br>"
+    if (lastUpdated) {
+      text += ' Last fetched server data: ' + lastUpdated;
+    }
+    this.popup(text, "#FBC02D")
+  }
+
+  messageNoData() {
+    // alert user that there is no data available
+    this.popup("You're offline and local data is unavailable", "#D32F2F")
+  }
+
+  messageDataSaved() {
+    // alert user that data has been saved for offline
+    // const lastUpdated = this.getLastUpdated();
+    // let text = "Server data was saved for offline mode";
+    // if (lastUpdated) { text += ' on ' + lastUpdated;}
+    // this.popup(text, "#388E3C")
+  }
+
+   messageSaveError() {
+    // alert user that data couldn't be saved offline
+    //this.popup("Server data couldn't be saved offline :(", "#C62828")
+  }
+
+  getLastUpdated() {
+    return localStorage.getItem('lastUpdated');
+  }
+
+  setLastUpdated(date) {
+    localStorage.setItem('lastUpdated', date);
+  }
+
+  popup(text, color){
+
+    var newItem = document.createElement('div');
+    newItem.id = "popup";
+    newItem.innerHTML = '<p class="dateWritten">' + text + '</p>';
+    newItem.style.backgroundColor = color;
+
+    this.shadowRoot.appendChild(newItem); // Add the new item to the shadowroot
+
+    // Remove (and fade out) popup after a little while
+    setTimeout(() => {
+      newItem.classList.add("fadeout");
+      setTimeout(() => {
+        newItem.remove();
+      }, 500);
+    }, 4000);
+  }
 
   /* Call API and return JSON data of the shows */
   getShows() {
