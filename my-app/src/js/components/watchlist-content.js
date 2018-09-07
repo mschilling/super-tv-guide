@@ -64,9 +64,8 @@ class watchlistContent extends PolymerElement{
 
   /* Get shows */
   getShows() {
-    let userID = 1; // Static for now, should be variable.
-    // API request
-    var request = 'https://jsonplaceholder.typicode.com/posts?userId=' + userID; // TODO: Change URL to the API api/users/shows/userid or something
+    var request = 'https://us-central1-super-tv-guide.cloudfunctions.net/api/api/feed';
+   
     return fetch(request).then(response => {
       if (!response.ok) {
         throw Error(response.statusText);
@@ -81,8 +80,8 @@ class watchlistContent extends PolymerElement{
     items.forEach(item => {
       var newItem = document.createElement('div');
       newItem.classList.add("card");
-      newItem.innerHTML = '<div>Title: <span>' + item.title + '</span></div>' +
-                          '<div>Description: <span> ' + item.body + '</span></div>';
+      newItem.innerHTML = '<div>Title: ' + item.seriename + '</div>' +
+                          '<div>S' + item.seasonnumber + 'E' + item.episodenumber + '</div>';
       this.shadowRoot.appendChild(newItem); // Add the new item to the shadowroot
     });
     console.log("Function updateUI done");
