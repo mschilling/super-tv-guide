@@ -18,16 +18,11 @@ class MyView2 extends PolymerElement {
       <style include="shared-styles">
         :host {
           display: block;
-
           padding: 10px;
         }
       </style>
 
-      <div class="card">
-        <div class="circle">2</div>
-        <h1>Watchlist</h1>
-        <p>Hier een lijstje van alle door de user geselecteerde series en hun informatie.</p>
-      </div>
+      <h1>Feed</h1>
 
       <watchlist-content></watchlist-content>
     `;
