@@ -15,7 +15,9 @@ app.use(cors({ origin: true }));
 
 router.get('/feed', (req, res) => {
 
-    tvdb.authenticate().then(() => {
+    tvdb.authenticate()
+        .catch(err => console.log(err))
+        .then(() => {
 
         async function getFeed() {
 
