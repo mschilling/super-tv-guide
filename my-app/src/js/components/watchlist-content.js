@@ -87,7 +87,7 @@ class watchlistContent extends PolymerElement{
   /* Make sure network content is loaded first,
      If network is not available: load local content.
   */ 
-  loadContentNetworkFirst() { // Not done yet
+  loadContentNetworkFirst() { 
     this.getShows()
     .then(dataFromNetwork => {
       this.saveLocally(dataFromNetwork)
@@ -130,16 +130,16 @@ class watchlistContent extends PolymerElement{
   }
 
   messageDataSaved() {
-    // alert user that data has been saved for offline
-    // const lastUpdated = this.getLastUpdated();
-    // let text = "Server data was saved for offline mode";
-    // if (lastUpdated) { text += ' on ' + lastUpdated;}
-    // this.popup(text, "#388E3C")
+    //alert user that data has been saved for offline
+    const lastUpdated = this.getLastUpdated();
+    let text = "Server data was saved for offline mode";
+    if (lastUpdated) { text += ' on ' + lastUpdated;}
+    this.popup(text, "#388E3C")
   }
 
    messageSaveError() {
-    // alert user that data couldn't be saved offline
-    //this.popup("Server data couldn't be saved offline :(", "#C62828")
+    //alert user that data couldn't be saved offline
+    this.popup("Server data couldn't be saved offline :(", "#C62828")
   }
 
   getLastUpdated() {
@@ -171,7 +171,7 @@ class watchlistContent extends PolymerElement{
   /* Call API and return JSON data of the shows */
   getShows() {
 
-    var request = 'https://us-central1-super-tv-guide.cloudfunctions.net/api/api/feed';
+    var request = 'https://us-central1-super-tv-guide.cloudfunctions.net/api/api/testfeed';
    
     return fetch(request).then(response => {
       if (!response.ok) {
@@ -186,13 +186,26 @@ class watchlistContent extends PolymerElement{
     // Loop through the items send with the parameter
     items.forEach(item => {
       var newItem = document.createElement('div');
-      newItem.classList.add("card");
-      newItem.innerHTML = '<p class="dateWritten">' + this.getDay(item.episodereleasedate) + '</p>' +
-                          '<p class="serieName">' + item.seriename + '<p>' +
-                          '<div class="divider"></div> ' +
-                          '<div class="row"><span><img src="images/icons/calendar.svg" alt="Calendar icon" class="icon"><p class="date">' + this.formatDate(item.episodereleasedate) + '</p></span>' +
-                          '<span><img src="images/icons/clock.svg" alt="Clock icon" class="icon icon-clock"><p>' + item.episodereleasetime + '</p></span>' +
-                          '<p class="se">S' + item.seasonnumber + 'E' + item.episodenumber + '</p></div>';
+      newItem.innerHTML = `
+                          <a onclick="showDetails(${item.serieid})">
+                          <div class="card">
+                            <p class="dateWritten">${this.getDay(item.episodereleasedate)}</p>
+                            <p class="serieName"> ${item.seriename} <p>
+                            <div class="divider"></div>
+                            <div class="row">
+                              <span>
+                                <img src="images/icons/calendar.svg" alt="Calendar icon" class="icon">
+                                <p class="date">${this.formatDate(item.episodereleasedate)}</p>
+                              </span>
+                              <span>
+                                <img src="images/icons/clock.svg" alt="Clock icon" class="icon icon-clock">
+                                <p>${item.episodereleasetime}</p>
+                              </span>
+                              <p class="se">S${item.seasonnumber}E${item.episodenumber}</p>
+                            </div>
+                          </div>
+                          </a>
+                          `;
       this.shadowRoot.appendChild(newItem); // Add the new item to the shadowroot
     });
   }
@@ -278,6 +291,8 @@ class watchlistContent extends PolymerElement{
         });
       });
   }
+
+  
 
 }
 

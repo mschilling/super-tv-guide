@@ -27,6 +27,9 @@ class MyView2 extends PolymerElement {
       <watchlist-content></watchlist-content>
     `;
   }
+  
 }
+
+
 
 window.customElements.define('my-view2', MyView2);
