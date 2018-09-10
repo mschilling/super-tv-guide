@@ -4,87 +4,165 @@ const request = require('request');
 const fileLocation = './tvdb.json';
 
 export class TVDBManager {
+
+    apiKey: string;
+    auth: string;
     
     constructor() {
-
-        const apiKey: string = this.getTVDBApiKey();
-        const auth: string = this.getTVDBAuth(apiKey);
-
+        this.setApiKey();
     }
 
-    /*
-    * Retrieves the apikey stored in the provided json file.
-    * 
-    * @returns {string} - The apikey stored in the provided json file.
-    */
-    private getTVDBApiKey(): string {
-
-         // Get the apikey file.
-        try {
-            const file = fs.readFileSync(fileLocation, 'utf8');
-            const obj = JSON.parse(file);
-            return obj.apikey;
-        } catch (err) {
-            console.log(err);
-            return null;
-        }
-
+    private setApiKey() {
+        const file = JSON.parse(fs.readFileSync(fileLocation, 'utf8'));
+        this.apiKey = file.apikey;
     }
 
-    /*
-    * Retrieves the authentication code from https://www.thetvdb.com/ with the provided apikey.
-    * 
-    * @param {string} apiKey - The apikey of your project from https://www.thetvdb.com/.
-    * @returns {string} - The authentication code retrieved from https://www.thetvdb.com/.
-    */
-    private getTVDBAuth(apiKey: string): string {
+    public async authenticate() {
 
-        // Object used for stroring the apikey.
-        const jsonBody: object = {
-            'apikey': apiKey
-        };
-
-        const self = this; // Used to call this in request().
-        
-        // Creates a POST request to the URL with the jsonBody.
-        request({
-            url: 'https://api.thetvdb.com/login',
-            method: 'POST',
-            json: true,
-            body: jsonBody
-        }, function (error, response, body){
+        return new Promise((resolve, reject) => {
             
-            // Checks if there hasn't been a response.
-            if (!response) {
-                console.log(error);
-                return null;
-            }
+            if (this.auth === undefined || this.auth === null) {
 
-            self.storeAuth(apiKey, body.token);
-            return body.token;
+                const options = {
+                    url: 'https://api.thetvdb.com/login',
+                    method: 'POST',
+                    json: true,
+                    body: { 
+                        'apikey': this.apiKey 
+                    }
+                }
+    
+                const self = this;
+    
+                function callback(error, response, body) {
+    
+                    if (error) throw error;
+                    self.auth = body.token;
+                    resolve();
+                }
+
+                request(options, callback);
+
+            }
+            else {
+
+                resolve();
+
+            }
+        });
+    }
+
+    public async getFeed() {
+
+        const ids = [104271, 311900, 75805];
+
+        const promises = ids.map(async (id) => {
+            return new Promise((resolve, reject) => {
+                resolve(this.getSerie(id));
+            })
         });
 
-        return null;
+        const series = await Promise.all(promises);
+        const episodes = [];
+
+        series.forEach(serieEpisodes => {
+            const _serieEpisodes: any = serieEpisodes;
+            _serieEpisodes.forEach(serieEpisode => {
+                episodes.push(serieEpisode);
+            });
+        });
+
+        episodes.sort(function(o1, o2) {
+            const a = new Date(o1.episodereleasedate);
+            const b = new Date(o2.episodereleasedate);
+            return a<b ? -1 : a>b ? 1 : 0;
+        });
+        
+
+        return new Promise((resolve, reject) => {
+
+            resolve(episodes);
+
+        });
 
     }
 
-    /*
-    * Stores the apikey and authentication code in the provided json file.
-    */
-    private storeAuth(apiKey: string, auth: string): void {
+    private async getSerie(id: number) {
 
-        const obj: object = {
-            apikey: apiKey,
-            auth: auth
+        const serie = await this.requestGET(`https://api.thetvdb.com/series/${id}`);
+        const serieData = serie['data'];
+
+        const serieEpisodes = await this.getSerieEpisodes(serieData);
+        
+        return new Promise((resolve, reject) => {
+            resolve(serieEpisodes);
+        });
+
+    }
+
+    private async getSerieEpisodes(serieData: any) {
+        
+        const dates: any = [];
+        const episodes = [];
+
+        const today = new Date();
+        for (let i = 0; i < 7; i++) {
+            const date = new Date(today.getTime() + i * 86400000);
+            const dateString = date.getFullYear() + '-' + ("0" + (date.getMonth() + 1)).slice(-2) + '-' + ("0" + date.getDate()).slice(-2);
+            dates.push(dateString);
         }
 
-        // Write the object to the json file.
-        try {
-            fs.writeFileSync(fileLocation, JSON.stringify(obj), 'utf8');
-        } catch (err) {
-            console.log(err);
-            return;
-        }
+        let response: any = await this.requestGET(`https://api.thetvdb.com/series/${serieData.id}/episodes`);
+        const lastPage = response['links']['last']
+
+        if (lastPage > 1)
+            response = await this.requestGET(`https://api.thetvdb.com/series/${serieData.id}/episodes/query?page=${lastPage}`);
+
+        response['data'].forEach(item => {
+            if (dates.includes(item.firstAired)) {
+                episodes.push({
+                    seriename: serieData.seriesName,
+                    serieimgurl: serieData.banner,
+                    seasonnumber: item.airedSeason,
+                    episodenumber: item.airedEpisodeNumber,
+                    episodename: item.episodeName,
+                    episodedescription: item.overview,
+                    episodereleasedate: item.firstAired,
+                    episodereleasetime: serieData.airsTime
+                });
+            }
+        });
+
+        return new Promise((resolve, reject) => {
+
+            resolve(episodes);
+
+        });
+
+    }
+
+    private async requestGET(url: string) {
+
+        return new Promise((resolve, reject) => {
+
+            const options = {
+                url: url,
+                method: 'GET',
+                json: true,
+                headers: { 
+                    'Authorization': 'Bearer ' + this.auth 
+                }
+            }
+
+            function callback(error, response, body) {
+
+                if (error) throw error;
+                resolve(body);
+            }
+            
+            request(options, callback);
+
+        });
 
     }
 
