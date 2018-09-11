@@ -173,8 +173,8 @@ class watchlistContent extends PolymerElement {
     // Make new db if not existent
     return idb.open('super-tv-guide', 1, function(upgradeDb) {
         if (!upgradeDb.objectStoreNames.contains('watchlist')) {
-            var store = upgradeDb.createObjectStore('watchlist');
-            store.createIndex('index', ['episodeid'], {unique:true});
+          upgradeDb.createObjectStore('watchlist', {keyPath: 'id',
+          autoIncrement: true});
         }
     });
   }
