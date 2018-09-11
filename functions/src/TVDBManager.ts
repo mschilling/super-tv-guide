@@ -135,7 +135,8 @@ export class TVDBManager {
                     episodename: item.episodeName,
                     episodedescription: item.overview,
                     episodereleasedate: item.firstAired,
-                    episodereleasetime: airTime
+                    episodereleasetime: airTime,
+                    episodeid: item.id
                 });
             }
         });
