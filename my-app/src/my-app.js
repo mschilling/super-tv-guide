@@ -64,6 +64,10 @@ class MyApp extends PolymerElement {
           text-decoration: none;
           color: var(--app-secondary-color);
           line-height: 40px;
+          font-size: 14pt;
+        }
+        .drawer-list a:focus{
+          outline: none;
         }
 
         .drawer-list a.iron-selected {

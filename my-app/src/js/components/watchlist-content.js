@@ -72,7 +72,7 @@ class watchlistContent extends PolymerElement {
 
   /* Call API and return JSON data of the shows */
   getShows() {
-    var request = 'https://us-central1-super-tv-guide.cloudfunctions.net/api/api/testfeed';
+    var request = 'https://us-central1-super-tv-guide.cloudfunctions.net/api/api/feed';
    
     return fetch(request).then(response => {
       if (!response.ok) {
@@ -234,6 +234,9 @@ class watchlistContent extends PolymerElement {
           .serie-name{
             color: #B71C1C;
             font-weight: 600;
+            font-size: 13pt;
+            margin-top: 5px;
+            margin-bottom: 5px;
           }
           .row{
             float: left;
@@ -245,7 +248,7 @@ class watchlistContent extends PolymerElement {
           }
           .row p{
             float: left;
-            color: #3B3B3B;
+            color: #585858;
             margin-top: -1px;
           }
           .card{
@@ -322,8 +325,8 @@ class watchlistContent extends PolymerElement {
             position: fixed;
             background-color: #b71c1c;
             border-radius: 50%;
-            height: 50px;
-            width: 50px;
+            height: 60px;
+            width: 60px;
             bottom: 25px;
             left: 25px;
             display: flex;
@@ -338,8 +341,8 @@ class watchlistContent extends PolymerElement {
             transition: opacity 250ms ease-in-out 125ms;
           }
           .icon-arrow-left{
-            width: 12px;
-            height: 12px;
+            width: 15px;
+            height: 15px;
           }
           #detailed-content{
             float: left;
