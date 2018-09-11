@@ -177,10 +177,10 @@ export class TVDBManager {
         let time = _time;
         const hours = parseInt(time.substr(0, 2));
         console.log(time);
-        if(_time.indexOf('AM') != -1 && hours == 12) {
+        if(_time.indexOf('AM') !== -1 && hours === 12) {
             time = time.replace('12', '0');
         }
-        if(_time.indexOf('PM')  != -1 && hours < 12) {
+        if(_time.indexOf('PM')  !== -1 && hours < 12) {
             time = time.replace(hours, (hours + 12));
         }
         return time.replace(/(AM|PM)/, '');
