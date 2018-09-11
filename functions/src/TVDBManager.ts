@@ -176,7 +176,7 @@ export class TVDBManager {
     private convertTo24Hour(_time): string {
         let time = _time;
         const hours = parseInt(time.substr(0, 2));
-        console.log(time);
+
         if(_time.indexOf('AM') !== -1 && hours === 12) {
             time = time.replace('12', '0');
         }
