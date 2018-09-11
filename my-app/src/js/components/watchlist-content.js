@@ -1,119 +1,88 @@
-import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
+// Import the Polymer library and the html helper function
+import { PolymerElement, html} from '@polymer/polymer/polymer-element.js';
+
+// Import template repeater
+import '@polymer/polymer/lib/elements/dom-repeat.js';
+
 import '../../shared-styles.js';
 
 // Import IDB
 import '../idb-promised.js';
 
-// Class watchlistContent (custom element) used to display a user's watchlist items
-class watchlistContent extends PolymerElement{
-
-  static get template() { 
-    return html`
-        <style include="shared-styles">
-            :host {
-              display: block;
-            }
-            p{
-              margin: 0;
-            }
-            .dateWritten{
-              margin-bottom: 2px;
-              font-size: 10pt;
-            }
-            .serieName{
-              color: #B71C1C;
-              font-weight: 600;
-            }
-            .row{
-              margin-top: 10px;
-              float: left;
-              width: 100%;
-              display: flex;
-              justify-content: space-between;
-            }
-            .row p{
-              float: left;
-              color: #3B3B3B;
-              margin-top: -1px;
-            }
-            .card{
-              float: left;
-              width: calc(100% - 72px);
-              margin-bottom: 10px;
-              margin-top: 10px;
-            }
-            .divider{
-              margin-top: 5px;
-              float: left;
-              width: 100%;
-              height: 1px;
-              background-color: #f2f2f2;
-            }
-            .icon{
-              width: 15px;
-              margin-right: 5px;
-              margin-top: 2px;
-              float: left;
-            }
-            .row .se{
-              color: #a2a2a2;
-            }
-            .icon-clock{
-              margin-top: 3px;
-            }
-            #popup{
-              border-radius: 5px;
-              position: fixed;
-              padding: 10px;
-              width: calc(90% - 20px);
-              margin: 0 auto;
-              bottom: 15px;
-              color: white;
-            }
-            .fadeout{
-              opacity: 0;
-              transition: all 0.4s ease-out;
-            }
-        </style>
-    `;
-  }
+class watchlistContent extends PolymerElement {
 
   constructor() {
     super();
     watchlistContent.dbPromise = this.createIDB();
     this.loadContentNetworkFirst();
   }
-
-  /* Make sure network content is loaded first,
-     If network is not available: load local content.
-  */ 
-  loadContentNetworkFirst() { 
-    this.getShows()
-    .then(dataFromNetwork => {
-      this.saveLocally(dataFromNetwork)
-      .then(() => {
-        this.updateUI(dataFromNetwork);
-        this.setLastUpdated(new Date());
-        this.messageDataSaved();
-      }).catch(err => {
-        this.messageSaveError();
-        console.warn(err);
-      });
-    }).catch(err => {
-      console.log('Network requests have failed, this is expected if offline');
-      this.loadLocally()
-      .then(offlineData => {
-        if (!offlineData.length) {
-          this.messageNoData();
-        } else {
-          this.messageOffline();
-          this.updateUI(offlineData); 
-        }
-      });
-    });
-  } 
-
   
+  static get properties() {
+    return {
+      shows: {
+        type: Array,
+        value() {
+          return [];
+        }
+      },
+      showInfo: {
+        type: Array,
+        value() {
+          return [];
+        }
+      },
+      detailesOpened: {
+        type: Boolean,
+        value() {
+          return false;
+        }
+      }
+    };
+  }
+
+  /* 
+  *  Make sure network content is loaded first,
+  *  If network is not available: load local content.
+  */ 
+ loadContentNetworkFirst() { 
+  this.getShows()
+  .then(dataFromNetwork => {
+    this.saveLocally(dataFromNetwork)
+    .then(() => {
+      this.shows = dataFromNetwork;
+      this.setLastUpdated(new Date());
+      //this.messageDataSaved();
+    }).catch(err => {
+      this.messageSaveError();
+      console.warn(err);
+    });
+  }).catch(err => {
+    console.log('Network requests have failed, this is expected if offline');
+    this.loadLocally()
+    .then(offlineData => {
+      if (!offlineData.length) {
+        this.messageNoData();
+      } else {
+        this.messageOffline();
+        this.shows = offlineData; 
+      }
+    });
+  });
+} 
+
+  /* Call API and return JSON data of the shows */
+  getShows() {
+    var request = 'https://us-central1-super-tv-guide.cloudfunctions.net/api/api/testfeed';
+   
+    return fetch(request).then(response => {
+      if (!response.ok) {
+        throw Error(response.statusText);
+      }
+      return response.json();
+    });
+    
+  }
+
   messageOffline() {
     // alert user that data may not be current
     const lastUpdated = this.getLastUpdated();
@@ -168,48 +137,6 @@ class watchlistContent extends PolymerElement{
     }, 4000);
   }
 
-  /* Call API and return JSON data of the shows */
-  getShows() {
-
-    var request = 'https://us-central1-super-tv-guide.cloudfunctions.net/api/api/testfeed';
-   
-    return fetch(request).then(response => {
-      if (!response.ok) {
-        throw Error(response.statusText);
-      }
-      return response.json();
-    });
-  }
-
-  /* Update the UI */
-  updateUI(items) {
-    // Loop through the items send with the parameter
-    items.forEach(item => {
-      var newItem = document.createElement('div');
-      newItem.innerHTML = `
-                          <a onclick="showDetails(${item.serieid})">
-                          <div class="card">
-                            <p class="dateWritten">${this.getDay(item.episodereleasedate)}</p>
-                            <p class="serieName"> ${item.seriename} <p>
-                            <div class="divider"></div>
-                            <div class="row">
-                              <span>
-                                <img src="images/icons/calendar.svg" alt="Calendar icon" class="icon">
-                                <p class="date">${this.formatDate(item.episodereleasedate)}</p>
-                              </span>
-                              <span>
-                                <img src="images/icons/clock.svg" alt="Clock icon" class="icon icon-clock">
-                                <p>${item.episodereleasetime}</p>
-                              </span>
-                              <p class="se">S${item.seasonnumber}E${item.episodenumber}</p>
-                            </div>
-                          </div>
-                          </a>
-                          `;
-      this.shadowRoot.appendChild(newItem); // Add the new item to the shadowroot
-    });
-  }
-
   /* Find if the episode is aired today, tomorrow, has already been aired or will be */
   getDay(date){
 
@@ -245,10 +172,9 @@ class watchlistContent extends PolymerElement{
   createIDB(){
     // Make new db if not existent
     return idb.open('super-tv-guide', 1, function(upgradeDb) {
-        console.log('Making a new object store');
         if (!upgradeDb.objectStoreNames.contains('watchlist')) {
-            upgradeDb.createObjectStore('watchlist', {keyPath: 'id',
-            autoIncrement: true});
+            var store = upgradeDb.createObjectStore('watchlist');
+            store.createIndex('index', ['episodeid'], {unique:true});
         }
     });
   }
@@ -291,10 +217,231 @@ class watchlistContent extends PolymerElement{
         });
       });
   }
-
   
+  static get template() {
+    return html`
+        <style include="shared-styles">
+          :host {
+            display: block;
+          }
+          p{
+            margin: 0;
+          }
+          .date-written{
+            margin-bottom: 2px;
+            font-size: 10pt;
+          }
+          .serie-name{
+            color: #B71C1C;
+            font-weight: 600;
+          }
+          .row{
+            float: left;
+            margin-top: 10px;
+            float: left;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+          }
+          .row p{
+            float: left;
+            color: #3B3B3B;
+            margin-top: -1px;
+          }
+          .card{
+            float: left;
+            width: calc(100% - 72px);
+            margin-bottom: 10px;
+            margin-top: 10px;
+          }
+          .divider{
+            float: left;
+            margin-top: 5px;
+            float: left;
+            width: 100%;
+            height: 1px;
+            background-color: #f2f2f2;
+          }
+          .icon{
+            width: 15px;
+            margin-right: 5px;
+            margin-top: 2px;
+            float: left;
+          }
+          .row .se{
+            color: #a2a2a2;
+          }
+          .icon-clock{
+            margin-top: 3px;
+          }
+          #popup{
+            border-radius: 5px;
+            position: fixed;
+            padding: 10px;
+            width: calc(90% - 20px);
+            margin: 0 auto;
+            bottom: 15px;
+            color: white;
+          }
+          .fadeout{
+            opacity: 0;
+            transition: all 0.4s ease-out;
+          }
+          #show-details{
+            width: 100%;
+            margin-left: -10px;
+            height: calc(100vh - 64px);
+            padding-top: 64px;
+            bottom: 0;
+            overflow-y: scroll;
+            position: fixed;
+            background-color: #eeeeee;
+            transform: translateX(100%);
+            transition: all 250ms ease-in-out;
+          }
+          #show-details-body{
+            margin: 10px;
+            margin-top: -15px;
+            width: calc(100% - 52px);
+            margin-bottom: 75px;
+          }
+          #show-details.open{
+            transform: translateX(0) !important;
+          }
+          #header-img{
+            float: left;
+            width: 100%;
+            height: 200px;
+          }
+          #header-img img{
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+          #back-btn{
+            position: fixed;
+            background-color: #b71c1c;
+            border-radius: 50%;
+            height: 50px;
+            width: 50px;
+            bottom: 25px;
+            left: 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 2px 2px 20px rgba(0,0,0,0.4);
+            opacity: 0;
+            transition: opacity 200ms ease-in-out;
+          }
+          #back-btn.open{
+            opacity: 1;
+            transition: opacity 250ms ease-in-out 125ms;
+          }
+          .icon-arrow-left{
+            width: 12px;
+            height: 12px;
+          }
+          #detailed-content{
+            float: left;
+            margin-top: 15px;
+            margin-bottom: 15px;
+          }
+          #episode-title{
+            color: #1e1e1e;
+            font-weight: 600;
+            margin-bottom: 10px;
+          }
+      </style>
+
+      <template is="dom-repeat" items="{{shows}}">
+        <div class="card" on-click="showDetails">
+          <p class="date-written">[[getDay(item.episodereleasedate)]]</p>
+              <p class="serie-name">[[item.seriename]]</p>
+              <div class="divider"></div>
+              <div class="row">
+                <span>
+                  <img src="images/icons/calendar.svg" alt="Calendar icon" class="icon">
+                  <p class="date">[[formatDate(item.episodereleasedate)]]</p>
+                </span>
+                <span>
+                  <img src="images/icons/clock.svg" alt="Clock icon" class="icon icon-clock">
+                  <p>[[item.episodereleasetime]]</p>
+                </span>
+                <p class="se">S[[item.seasonnumber]]E[[item.episodenumber]]</p>
+              </div>
+              </div>
+        </div>
+      </template>
+          
+     <div id="show-details">
+      <template is="dom-if" if="{{showInfo.serieid}}">
+
+          <div id="header-img">
+              <img src="https://www.thetvdb.com/banners/fanart/original/[[showInfo.serieid]]-1.jpg" alt="Serie banner">
+          </div>
+
+          <div id="show-details-body" class="card">
+            <p class="date-written">[[getDay(showInfo.episodereleasedate)]]</p>
+            <p class="serie-name">[[showInfo.seriename]]</p>
+            <div class="divider"></div>
+            <div class="row">
+              <span>
+                <img src="images/icons/calendar.svg" alt="Calendar icon" class="icon">
+                <p class="date">[[formatDate(showInfo.episodereleasedate)]]</p>
+              </span>
+              <span>
+                <img src="images/icons/clock.svg" alt="Clock icon" class="icon icon-clock">
+                <p>[[showInfo.episodereleasetime]]</p>
+              </span>
+              <p class="se">S[[showInfo.seasonnumber]]E[[showInfo.episodenumber]]</p>
+            </div>
+            <div class="divider"></div>
+            
+            <div id="detailed-content">
+              <template is="dom-if" if="{{showInfo.episodename}}">
+                <p id="episode-title">[[showInfo.episodename]]</p>
+              </template>
+
+              <template is="dom-if" if="{{showInfo.episodedescription}}">
+                <p>[[showInfo.episodedescription]]</p>
+              </template>
+
+              <template is="dom-if" if="{{!showInfo.episodename}}">
+                <p id="episode-title">Geen title beschikbaar</p>
+              </template>
+
+              <template is="dom-if" if="{{!showInfo.episodedescription}}">
+                <p>Geen beschrijving beschikbaar</p>
+              </template>
+
+            </div>
+
+          </div>
+          
+      </template>
+     </div>
+
+      <div id="back-btn" on-click="showDetails">
+        <img class="icon-arrow-left" src="images/icons/arrow-left.svg">
+      </div>
+    `;
+  }
+
+  showDetails(e) {
+    // Set current show to the clicked one
+    let container = this.shadowRoot.getElementById("show-details");
+    let backbtn = this.shadowRoot.getElementById("back-btn");
+    if(!this.detailesOpened){
+      this.showInfo = e.model.item;
+      container.classList.add("open");
+      backbtn.classList.add("open");
+      this.detailesOpened = true;
+    }else{
+      container.classList.remove("open");
+      backbtn.classList.remove("open");
+      this.detailesOpened = false;
+    }
+  }
 
 }
-
-  // Define the class watchlistContent as custom element
-  window.customElements.define('watchlist-content', watchlistContent);
+customElements.define('watchlist-content', watchlistContent);

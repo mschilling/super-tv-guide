@@ -103,7 +103,7 @@ class MyApp extends PolymerElement {
         <!-- Main content -->
         <app-header-layout has-scrolling-region="">
 
-          <app-header slot="header" condenses="" reveals="" effects="waterfall">
+          <app-header slot="header" fixed condenses="" reveals="" effects="waterfall">
             <app-toolbar>
               <paper-icon-button icon="my-icons:menu" drawer-toggle=""></paper-icon-button>
               <div main-title="">Super TV Guide</div>
@@ -112,7 +112,7 @@ class MyApp extends PolymerElement {
 
           <iron-pages selected="[[page]]" attr-for-selected="name" role="main">
             <my-view1 name="view1"></my-view1>
-            <my-view2 name="feed"></my-view2>
+            <my-feed name="feed"></my-feed>
             <my-view3 name="view3"></my-view3>
             <my-view404 name="view404"></my-view404>
           </iron-pages>
@@ -168,7 +168,7 @@ class MyApp extends PolymerElement {
         import('./my-view1.js');
         break;
       case 'feed':
-        import('./my-view2.js');
+        import('./my-feed.js');
         break;
       case 'view3':
         import('./my-view3.js');
