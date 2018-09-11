@@ -120,6 +120,13 @@ export class TVDBManager {
 
         response['data'].forEach(item => {
             if (dates.includes(item.firstAired)) {
+
+                let airTime = serieData.airsTime;
+
+                if (serieData.airsTime.includes('AM') || serieData.airsTime.includes('PM')) {
+                    airTime = this.convertTo24Hour(airTime);
+                }
+
                 episodes.push({
                     seriename: serieData.seriesName,
                     serieimgurl: serieData.banner,
@@ -128,7 +135,7 @@ export class TVDBManager {
                     episodename: item.episodeName,
                     episodedescription: item.overview,
                     episodereleasedate: item.firstAired,
-                    episodereleasetime: serieData.airsTime
+                    episodereleasetime: airTime
                 });
             }
         });
@@ -164,6 +171,19 @@ export class TVDBManager {
 
         });
 
+    }
+
+    private convertTo24Hour(_time): string {
+        let time = _time;
+        const hours = parseInt(time.substr(0, 2));
+
+        if(_time.indexOf('AM') !== -1 && hours === 12) {
+            time = time.replace('12', '0');
+        }
+        if(_time.indexOf('PM')  !== -1 && hours < 12) {
+            time = time.replace(hours, (hours + 12));
+        }
+        return time.replace(/(AM|PM)/, '');
     }
 
 }
