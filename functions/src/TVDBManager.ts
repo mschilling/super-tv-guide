@@ -128,6 +128,7 @@ export class TVDBManager {
                 }
 
                 episodes.push({
+                    serieid: serieData.id,
                     seriename: serieData.seriesName,
                     serieimgurl: serieData.banner,
                     seasonnumber: item.airedSeason,
