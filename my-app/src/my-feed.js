@@ -12,7 +12,7 @@ import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import './shared-styles.js';
 import './js/components/watchlist-content.js';
 
-class MyView2 extends PolymerElement {
+class Feed extends PolymerElement {
   static get template() {
     return html`
       <style include="shared-styles">
@@ -27,6 +27,9 @@ class MyView2 extends PolymerElement {
       <watchlist-content></watchlist-content>
     `;
   }
+  
 }
 
-window.customElements.define('my-view2', MyView2);
+
+
+window.customElements.define('my-feed', Feed);
