@@ -54,7 +54,7 @@ export class TVDBManager {
 
     public async getFeed() {
 
-        const ids = [104271, 311900, 75805];
+        const ids = [104271, 311900, 75805, 71998, 70710, 71424];
 
         const promises = ids.map(async (id) => {
             return new Promise((resolve, reject) => {
