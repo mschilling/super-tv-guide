@@ -295,7 +295,7 @@ class myFeed extends PolymerElement {
             position: fixed;
             padding: 10px;
             width: calc(90% - 20px);
-            margin: 0 auto;
+            left: calc(5%);
             bottom: 15px;
             color: white;
           }
@@ -382,16 +382,16 @@ class myFeed extends PolymerElement {
       <link rel="stylesheet" href="/src/style/skeleton.css">
       
       <template is="dom-if" if="{{!rendered}}">
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
-        <div class="card"></div>
+        <div class="card feed-item"></div>
+        <div class="card feed-item"></div>
+        <div class="card feed-item"></div>
+        <div class="card feed-item"></div>
+        <div class="card feed-item"></div>
       </template>
 
 
       <template is="dom-repeat" items="{{shows}}">
-        <div class="card" on-click="showDetails">
+        <div class="card feed-item" on-click="showDetails">
           <p class="date-written">[[getDay(item.episodereleasedate)]]</p>
               <p class="serie-name">[[item.seriename]]</p>
               <div class="divider"></div>
