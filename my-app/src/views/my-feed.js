@@ -36,6 +36,12 @@ class myFeed extends PolymerElement {
         value() {
           return false;
         }
+      },
+      rendered: {
+        type: Boolean,
+        value() {
+          return false;
+        }
       }
     };
   }
@@ -50,6 +56,7 @@ class myFeed extends PolymerElement {
     this.saveLocally(dataFromNetwork)
     .then(() => {
       this.shows = dataFromNetwork;
+      this.rendered = true;
       this.setLastUpdated(new Date());
       //this.messageDataSaved();
     }).catch(err => {
@@ -64,7 +71,8 @@ class myFeed extends PolymerElement {
         this.messageNoData();
       } else {
         this.messageOffline();
-        this.shows = offlineData; 
+        this.shows = offlineData;
+        this.rendered = true; 
       }
     });
   });
@@ -371,6 +379,16 @@ class myFeed extends PolymerElement {
       </style>
 
       <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+      <link rel="stylesheet" href="/src/style/skeleton.css">
+      
+      <template is="dom-if" if="{{!rendered}}">
+        <div class="card"></div>
+        <div class="card"></div>
+        <div class="card"></div>
+        <div class="card"></div>
+        <div class="card"></div>
+      </template>
+
 
       <template is="dom-repeat" items="{{shows}}">
         <div class="card" on-click="showDetails">
