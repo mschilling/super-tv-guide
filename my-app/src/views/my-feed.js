@@ -6,8 +6,6 @@ import '@polymer/polymer/lib/elements/dom-repeat.js';
 
 import '../style/shared-styles.js';
 
-import { LinearProgress } from '@material/mwc-linear-progress/mwc-linear-progress';
-
 // Import IDB
 import '../js/idb-promised.js';
 
@@ -385,7 +383,6 @@ class myFeed extends PolymerElement {
       <link rel="stylesheet" href="/src/style/skeleton.css">
       
       <template is="dom-if" if="{{!rendered}}">
-        <mwc-linear-progress></mwc-linear-progress>
         <div class="card feed-item"></div>
         <div class="card feed-item"></div>
         <div class="card feed-item"></div>

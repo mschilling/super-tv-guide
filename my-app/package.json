@@ -13,7 +13,6 @@
     "test:integration": "polymer build # test that psk builds without error with the CLI"
   },
   "dependencies": {
-    "@material/linear-progress": "^0.39.1",
     "@material/mwc-icon": "^0.1.2",
     "@polymer/app-layout": "^3.0.0-pre.26",
     "@polymer/app-route": "^3.0.0-pre.26",
