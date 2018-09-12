@@ -17,15 +17,10 @@ router.get('/feed', (req, res) => {
 
     tvdb.authenticate()
         .then(() => {
-
         async function getFeed() {
-
             res.json(await tvdb.getFeed());
-
         }
-
         getFeed().catch(err => console.log(err));
-
     })
     .catch(err => console.log(err));
 
