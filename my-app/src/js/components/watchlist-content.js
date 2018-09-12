@@ -243,17 +243,28 @@ class watchlistContent extends PolymerElement {
             margin-top: 10px;
             float: left;
             width: 100%;
-            display: flex;
-            justify-content: space-between;
           }
           .row p{
             float: left;
             color: #585858;
             margin-top: -1px;
           }
+          .row div{
+            height: 18px;
+            float: left;
+            width: 33%;
+            display: flex
+          }
+          .row div:nth-child(2){
+            justify-content: center;
+          }
+          .row div:last-child p{
+            width: 100%;
+            text-align: right;
+          }
           .card{
             float: left;
-            width: calc(100% - 72px);
+            width: calc(100% - 52px);
             margin-bottom: 10px;
             margin-top: 10px;
           }
@@ -354,6 +365,13 @@ class watchlistContent extends PolymerElement {
             font-weight: 600;
             margin-bottom: 10px;
           }
+          #no-info-found{
+            height: 100%;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
       </style>
 
       <template is="dom-repeat" items="{{shows}}">
@@ -362,15 +380,17 @@ class watchlistContent extends PolymerElement {
               <p class="serie-name">[[item.seriename]]</p>
               <div class="divider"></div>
               <div class="row">
-                <span>
+                <div>
                   <img src="images/icons/calendar.svg" alt="Calendar icon" class="icon">
                   <p class="date">[[formatDate(item.episodereleasedate)]]</p>
-                </span>
-                <span>
+                </div>
+                <div>
                   <img src="images/icons/clock.svg" alt="Clock icon" class="icon icon-clock">
                   <p>[[item.episodereleasetime]]</p>
-                </span>
-                <p class="se">S[[item.seasonnumber]]E[[item.episodenumber]]</p>
+                </div>
+                <div>
+                  <p class="se">S[[item.seasonnumber]]E[[item.episodenumber]]</p>
+                </div>
               </div>
               </div>
         </div>
@@ -388,16 +408,18 @@ class watchlistContent extends PolymerElement {
             <p class="serie-name">[[showInfo.seriename]]</p>
             <div class="divider"></div>
             <div class="row">
-              <span>
-                <img src="images/icons/calendar.svg" alt="Calendar icon" class="icon">
-                <p class="date">[[formatDate(showInfo.episodereleasedate)]]</p>
-              </span>
-              <span>
-                <img src="images/icons/clock.svg" alt="Clock icon" class="icon icon-clock">
-                <p>[[showInfo.episodereleasetime]]</p>
-              </span>
-              <p class="se">S[[showInfo.seasonnumber]]E[[showInfo.episodenumber]]</p>
-            </div>
+                <div>
+                  <img src="images/icons/calendar.svg" alt="Calendar icon" class="icon">
+                  <p class="date">[[formatDate(showInfo.episodereleasedate)]]</p>
+                </div>
+                <div>
+                  <img src="images/icons/clock.svg" alt="Clock icon" class="icon icon-clock">
+                  <p>[[showInfo.episodereleasetime]]</p>
+                </div>
+                <div>
+                  <p class="se">S[[showInfo.seasonnumber]]E[[showInfo.episodenumber]]</p>
+                </div>
+              </div>
             <div class="divider"></div>
             
             <div id="detailed-content">
@@ -410,11 +432,11 @@ class watchlistContent extends PolymerElement {
               </template>
 
               <template is="dom-if" if="{{!showInfo.episodename}}">
-                <p id="episode-title">Geen title beschikbaar</p>
+                <p id="episode-title">No title available</p>
               </template>
 
               <template is="dom-if" if="{{!showInfo.episodedescription}}">
-                <p>Geen beschrijving beschikbaar</p>
+                <p>No description available.</p>
               </template>
 
             </div>
@@ -422,6 +444,13 @@ class watchlistContent extends PolymerElement {
           </div>
           
       </template>
+
+      <template is="dom-if" if="{{!showInfo.serieid}}">
+          <div id="no-info-found">
+            <h1>No info found</h1>
+          </div>
+      </template>
+
      </div>
 
       <div id="back-btn" on-click="showDetails">
