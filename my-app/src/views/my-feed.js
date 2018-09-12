@@ -36,6 +36,12 @@ class myFeed extends PolymerElement {
         value() {
           return false;
         }
+      },
+      rendered: {
+        type: Boolean,
+        value() {
+          return false;
+        }
       }
     };
   }
@@ -50,6 +56,7 @@ class myFeed extends PolymerElement {
     this.saveLocally(dataFromNetwork)
     .then(() => {
       this.shows = dataFromNetwork;
+      this.rendered = true;
       this.setLastUpdated(new Date());
       //this.messageDataSaved();
     }).catch(err => {
@@ -64,7 +71,8 @@ class myFeed extends PolymerElement {
         this.messageNoData();
       } else {
         this.messageOffline();
-        this.shows = offlineData; 
+        this.shows = offlineData;
+        this.rendered = true; 
       }
     });
   });
@@ -72,7 +80,7 @@ class myFeed extends PolymerElement {
 
   /* Call API and return JSON data of the shows */
   getShows() {
-    var request = 'https://us-central1-super-tv-guide.cloudfunctions.net/api/api/feed';
+    var request = 'https://us-central1-super-tv-guide.cloudfunctions.net/api/api/testfeed';
    
     return fetch(request).then(response => {
       if (!response.ok) {
@@ -287,7 +295,7 @@ class myFeed extends PolymerElement {
             position: fixed;
             padding: 10px;
             width: calc(90% - 20px);
-            margin: 0 auto;
+            left: calc(5%);
             bottom: 15px;
             color: white;
           }
@@ -371,9 +379,19 @@ class myFeed extends PolymerElement {
       </style>
 
       <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+      <link rel="stylesheet" href="/src/style/skeleton.css">
+      
+      <template is="dom-if" if="{{!rendered}}">
+        <div class="card feed-item"></div>
+        <div class="card feed-item"></div>
+        <div class="card feed-item"></div>
+        <div class="card feed-item"></div>
+        <div class="card feed-item"></div>
+      </template>
+
 
       <template is="dom-repeat" items="{{shows}}">
-        <div class="card" on-click="showDetails">
+        <div class="card feed-item" on-click="showDetails">
           <p class="date-written">[[getDay(item.episodereleasedate)]]</p>
               <p class="serie-name">[[item.seriename]]</p>
               <div class="divider"></div>

@@ -1,0 +1,58 @@
+.card{
+    --card-padding: 16px;
+    --card-height: 89px;
+    --card-skeleton: linear-gradient(white var(--card-height), transparent 0);
+
+    --upcoming-height: 14px;
+    --upcoming-width: 60px;
+    --upcoming-position: 5px 5px;
+    --upcoming-skeleton: linear-gradient(#f2f2f2 var(--upcoming-height), transparent 0);
+
+    --title-height: 18px;
+    --title-width: 120px;
+    --title-position: 5px 28px;
+    --title-skeleton: linear-gradient(#f2f2f2 var(--title-height), transparent 0);
+
+    --divider-height: 1px;
+    --divider-width: calc(100% - var(--card-padding));
+    --divider-position: 5px 60px;
+    --divider-skeleton: linear-gradient(#f2f2f2 var(--divider-height), transparent 0);
+
+    --details-height: 14px;
+    --details-width: calc(100% - var(--card-padding));
+    --details-position: 5px 70px;
+    --details-skeleton: linear-gradient(#f2f2f2 var(--details-height), transparent 0);
+    }
+
+.card.feed-item{
+    height: var(--card-height);
+}
+.card:empty::after{
+    content: "";
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 5px;
+    background-image:
+        var(--upcoming-skeleton),
+        var(--title-skeleton),
+        var(--divider-skeleton),
+        var(--details-skeleton),
+        var(--card-skeleton)        /* card */
+    ;
+    background-size:
+        var(--upcoming-width) var(--upcoming-height),
+        var(--title-width) var(--title-height),
+        var(--divider-width) var(--divider-height),
+        var(--details-width) var(--details-height),
+        100% 100%;
+    ;
+    background-position:
+        var(--upcoming-position),
+        var(--title-position),
+        var(--divider-position),
+        var(--details-position),
+        0 0;                      /* card */
+    ;
+    background-repeat: no-repeat;
+}
