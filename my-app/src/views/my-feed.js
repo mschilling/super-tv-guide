@@ -80,7 +80,7 @@ class myFeed extends PolymerElement {
 
   /* Call API and return JSON data of the shows */
   getShows() {
-    var request = 'https://us-central1-super-tv-guide.cloudfunctions.net/api/api/feed';
+    var request = 'https://us-central1-super-tv-guide.cloudfunctions.net/api/api/testfeed';
    
     return fetch(request).then(response => {
       if (!response.ok) {
