@@ -4,16 +4,16 @@ import { PolymerElement, html} from '@polymer/polymer/polymer-element.js';
 // Import template repeater
 import '@polymer/polymer/lib/elements/dom-repeat.js';
 
-import '../../shared-styles.js';
+import '../style/shared-styles.js';
 
 // Import IDB
-import '../idb-promised.js';
+import '../js/idb-promised.js';
 
-class watchlistContent extends PolymerElement {
+class myFeed extends PolymerElement {
 
   constructor() {
     super();
-    watchlistContent.dbPromise = this.createIDB();
+    myFeed.dbPromise = this.createIDB();
     this.loadContentNetworkFirst();
   }
   
@@ -183,7 +183,7 @@ class watchlistContent extends PolymerElement {
   saveLocally(data){
     if (!('indexedDB' in window)) {return null;}
     this.clearDB();
-    return watchlistContent.dbPromise.then(db => {
+    return myFeed.dbPromise.then(db => {
       const tx = db.transaction('watchlist', 'readwrite');
       const store = tx.objectStore('watchlist');
       return Promise.all(data.map(item => store.put(item)))
@@ -197,7 +197,7 @@ class watchlistContent extends PolymerElement {
   /* Load content from IndexedDB in case user is offline */
   loadLocally(){
     if (!('indexedDB' in window)) {return null;}
-    return watchlistContent.dbPromise.then(db => {
+    return myFeed.dbPromise.then(db => {
       const tx = db.transaction('watchlist', 'readonly');
       const store = tx.objectStore('watchlist');
       return store.getAll();
@@ -207,7 +207,7 @@ class watchlistContent extends PolymerElement {
   /* Clear the database to prevent using too much memory */
   clearDB(){
     if (!('indexedDB' in window)) {return null;}
-      return watchlistContent.dbPromise.then(db => {
+      return myFeed.dbPromise.then(db => {
         const tx = db.transaction('watchlist', 'readwrite');
         const store = tx.objectStore('watchlist');
         return store.clear()
@@ -247,7 +247,7 @@ class watchlistContent extends PolymerElement {
           .row p{
             float: left;
             color: #585858;
-            margin-top: -1px;
+            margin-top: -3.5px;
           }
           .row div{
             height: 18px;
@@ -276,12 +276,6 @@ class watchlistContent extends PolymerElement {
             height: 1px;
             background-color: #f2f2f2;
           }
-          .icon{
-            width: 15px;
-            margin-right: 5px;
-            margin-top: 2px;
-            float: left;
-          }
           .row .se{
             color: #a2a2a2;
           }
@@ -303,7 +297,6 @@ class watchlistContent extends PolymerElement {
           }
           #show-details{
             width: 100%;
-            margin-left: -10px;
             height: calc(100vh - 64px);
             padding-top: 64px;
             bottom: 0;
@@ -351,9 +344,8 @@ class watchlistContent extends PolymerElement {
             opacity: 1;
             transition: opacity 250ms ease-in-out 125ms;
           }
-          .icon-arrow-left{
-            width: 15px;
-            height: 15px;
+          #back-btn i{
+            color: white;
           }
           #detailed-content{
             float: left;
@@ -372,7 +364,13 @@ class watchlistContent extends PolymerElement {
             align-items: center;
             justify-content: center;
           }
+          .small-icon{
+            font-size: 13pt !important;
+            margin-right: 5px;
+          }
       </style>
+
+      <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
       <template is="dom-repeat" items="{{shows}}">
         <div class="card" on-click="showDetails">
@@ -381,12 +379,12 @@ class watchlistContent extends PolymerElement {
               <div class="divider"></div>
               <div class="row">
                 <div>
-                  <img src="images/icons/calendar.svg" alt="Calendar icon" class="icon">
-                  <p class="date">[[formatDate(item.episodereleasedate)]]</p>
+                  <i class="material-icons small-icon">calendar_today</i>
+                  <p class="date go-up">[[formatDate(item.episodereleasedate)]]</p>
                 </div>
                 <div>
-                  <img src="images/icons/clock.svg" alt="Clock icon" class="icon icon-clock">
-                  <p>[[item.episodereleasetime]]</p>
+                  <i class="material-icons small-icon">access_time</i>
+                  <p class="go-up">[[item.episodereleasetime]]</p>
                 </div>
                 <div>
                   <p class="se">S[[item.seasonnumber]]E[[item.episodenumber]]</p>
@@ -409,11 +407,11 @@ class watchlistContent extends PolymerElement {
             <div class="divider"></div>
             <div class="row">
                 <div>
-                  <img src="images/icons/calendar.svg" alt="Calendar icon" class="icon">
+                <i class="material-icons small-icon">calendar_today</i>
                   <p class="date">[[formatDate(showInfo.episodereleasedate)]]</p>
                 </div>
                 <div>
-                  <img src="images/icons/clock.svg" alt="Clock icon" class="icon icon-clock">
+                  <i class="material-icons small-icon">access_time</i>
                   <p>[[showInfo.episodereleasetime]]</p>
                 </div>
                 <div>
@@ -454,7 +452,7 @@ class watchlistContent extends PolymerElement {
      </div>
 
       <div id="back-btn" on-click="showDetails">
-        <img class="icon-arrow-left" src="images/icons/arrow-left.svg">
+        <i class="material-icons">arrow_back</i>
       </div>
     `;
   }
@@ -476,4 +474,4 @@ class watchlistContent extends PolymerElement {
   }
 
 }
-customElements.define('watchlist-content', watchlistContent);
+customElements.define('my-feed', myFeed);
