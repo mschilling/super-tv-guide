@@ -75,6 +75,27 @@ export class TVDBManager {
         episodes.sort(function(o1, o2) {
             const a = new Date(o1.episodereleasedate);
             const b = new Date(o2.episodereleasedate);
+            const c = o1.episodereleasetime;
+            const d = o2.episodereleasetime;
+            
+            // Sort by time
+            if (o1.episodereleasedate === o2.episodereleasedate) {
+                
+                const chm = c.split(':');
+                const ch = chm[0];
+                const cm = chm[1];
+
+                const dhm = d.split(':');
+                const dh = dhm[0];
+                const dm = dhm[1];
+
+                const ctotal = +ch * 60 + +cm;
+                const dtotal = +dh * 60 + +dm;
+
+                return ctotal<dtotal ? -1 : ctotal>dtotal ? 1 : 0;
+            }
+
+            // Sort by date
             return a<b ? -1 : a>b ? 1 : 0;
         });
         
