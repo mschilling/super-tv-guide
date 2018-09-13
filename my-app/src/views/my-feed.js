@@ -16,7 +16,7 @@ class myFeed extends PolymerElement {
   constructor() {
     super();
     myFeed.dbPromise = this.createIDB();
-    this.loadContentNetworkFirst();
+    this.loadContent();
   }
   
   static get properties() {
@@ -52,37 +52,58 @@ class myFeed extends PolymerElement {
   *  Make sure network content is loaded first,
   *  If network is not available: load local content.
   */ 
- loadContentNetworkFirst() { 
-  this.getShows()
-  .then(dataFromNetwork => {
-    this.saveLocally(dataFromNetwork)
-    .then(() => {
-      this.shows = dataFromNetwork;
-      this.rendered = true;
-      this.setLastUpdated(new Date());
-      //this.messageDataSaved();
-    }).catch(err => {
-      this.messageSaveError();
-      console.warn(err);
-    });
-  }).catch(err => {
-    console.log('Network requests have failed, this is expected if offline');
+  loadContent() { 
     this.loadLocally()
     .then(offlineData => {
-      if (!offlineData.length) {
-        this.messageNoData();
-      } else {
-        this.messageOffline();
+      if (!offlineData.length){
+        this.loadFromNetwork();
+      } else{
+        this.messageOffline;
         this.shows = offlineData;
         this.rendered = true; 
+        this.loadFromNetwork();
       }
-    });
-  });
-} 
+    }).catch(err => {
+      console.warn(err);
+      this.loadFromNetwork();
+    })
+  } 
+
+  loadFromNetwork(){
+    this.getShows()
+    .then(dataFromNetwork => {
+      this.saveLocally(dataFromNetwork)
+      .then(() => {
+        this.shows = dataFromNetwork;
+        this.loadingDone(); 
+        this.setLastUpdated(new Date());
+      }).catch(err => {
+        this.messageSaveError();
+        console.warn(err);
+      });
+    }).catch(err => {
+      if(!this.shows.length){
+        this.messageNoData();
+      }else{
+        this.loadingDone();
+      }
+    })
+  }
+
+  loadingDone(){
+    this.rendered = true; 
+    let loader = this.shadowRoot.getElementById("loader");
+    loader.addEventListener('animationiteration', function(){
+      loader.classList.remove('anim');
+    })
+    loader.addEventListener('webkitAnimationIteration', function(){
+      loader.classList.remove('anim');
+    })
+  }
 
   /* Call API and return JSON data of the shows */
   getShows() {
-    var request = 'https://us-central1-super-tv-guide.cloudfunctions.net/api/api/testfeed';
+    var request = 'https://us-central1-super-tv-guide.cloudfunctions.net/api/api/feed';
    
     return fetch(request).then(response => {
       if (!response.ok) {
@@ -384,79 +405,74 @@ class myFeed extends PolymerElement {
             margin: 0;
             color: white;
           }
-          .container {
-            position: fixed;
-            height: 100vh;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        #loader {
+          position: absolute;
+          top: 64px;
+          width: 100%;
+          height: 6px;
+          background-color: #eeeeee;
         }
-        .backdrop {
-            width: 100%;
-            height: 100vh;
-            position: fixed;
-            background-color: rgba(36, 36, 36, 0.15);
+        #loader::before {
+          content: "";
+          display: inline;
+          position: absolute;
+          width: 50%;
+          left: -50%;
+          height: 100%;
+          text-align: center;
+          background-color: #d03838;
         }
-        .loader {
-          margin-top: -64px;
-          border: 8px solid #f3f3f3;
-          border-radius: 50%;
-          border-top: 8px solid #B71C1C;
-          width: 50px;
-          height: 50px;
-          -webkit-animation: spin 0.8s linear infinite; /* Safari */
-          animation: spin 0.8s linear infinite;
+        #loader.anim::before{
+          animation: loading 1s linear infinite;
         }
-        /* Safari */
-        @-webkit-keyframes spin {
-          0% { -webkit-transform: rotate(0deg); }
-          100% { -webkit-transform: rotate(360deg); }
+        @keyframes loading {
+            from {left: -50%;}
+            to {left: 100%;}
         }
-
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }  
+        #cards-container{
+          float: left;
+          width: 100%;
+          margin-top: 15px;
+        }
       </style>
 
       <link rel="stylesheet" href="/src/style/skeleton.css">
       
-      
+      <div id="loader" class="anim"></div>
+
       <template is="dom-if" if="{{!rendered}}">
-        <div class="container">
-          <div class="backdrop"></div>
-          <div class="loader"></div>
-        </div>
-        <div class="card feed-item"></div>
-        <div class="card feed-item"></div>
-        <div class="card feed-item"></div>
-        <div class="card feed-item"></div>
-        <div class="card feed-item"></div>
-      </template>
-
-
-      <template is="dom-repeat" items="{{shows}}">
-        <div class="card feed-item" on-click="showDetails">
-          <p class="date-written">[[getDay(item.episodereleasedate)]]</p>
-              <p class="serie-name">[[item.seriename]]</p>
-              <div class="divider"></div>
-              <div class="row">
-                <div>
-                  <mwc-icon>calendar_today</mwc-icon>
-                  <p class="date go-up">[[formatDate(item.episodereleasedate)]]</p>
-                </div>
-                <div>
-                  <mwc-icon>access_time</mwc-icon>
-                  <p class="go-up">[[item.episodereleasetime]]</p>
-                </div>
-                <div>
-                  <p class="se">S[[item.seasonnumber]]E[[item.episodenumber]]</p>
-                </div>
-              </div>
-              </div>
+          <div id="cards-container">
+          <div class="card feed-item"></div>
+          <div class="card feed-item"></div>
+          <div class="card feed-item"></div>
+          <div class="card feed-item"></div>
+          <div class="card feed-item"></div>
         </div>
       </template>
+
+      <div id="cards-container">
+        <template is="dom-repeat" items="{{shows}}">
+          <div class="card feed-item" on-click="showDetails">
+            <p class="date-written">[[getDay(item.episodereleasedate)]]</p>
+                <p class="serie-name">[[item.seriename]]</p>
+                <div class="divider"></div>
+                <div class="row">
+                  <div>
+                    <mwc-icon>calendar_today</mwc-icon>
+                    <p class="date go-up">[[formatDate(item.episodereleasedate)]]</p>
+                  </div>
+                  <div>
+                    <mwc-icon>access_time</mwc-icon>
+                    <p class="go-up">[[item.episodereleasetime]]</p>
+                  </div>
+                  <div>
+                    <p class="se">S[[item.seasonnumber]]E[[item.episodenumber]]</p>
+                  </div>
+                </div>
+                </div>
+          </div>
+        </template>
+      </div>
           
      <div id="show-details">
       <template is="dom-if" if="{{showInfo.serieid}}">
