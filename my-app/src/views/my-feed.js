@@ -16,7 +16,7 @@ class myFeed extends PolymerElement {
   constructor() {
     super();
     myFeed.dbPromise = this.createIDB();
-    this.loadContentNetworkFirst();
+    this.loadContent();
   }
   
   static get properties() {
@@ -52,33 +52,43 @@ class myFeed extends PolymerElement {
   *  Make sure network content is loaded first,
   *  If network is not available: load local content.
   */ 
- loadContentNetworkFirst() { 
-  this.getShows()
-  .then(dataFromNetwork => {
-    this.saveLocally(dataFromNetwork)
-    .then(() => {
-      this.shows = dataFromNetwork;
-      this.loadingDone(); 
-      this.setLastUpdated(new Date());
-      //this.messageDataSaved();
-    }).catch(err => {
-      this.messageSaveError();
-      console.warn(err);
-    });
-  }).catch(err => {
-    console.log('Network requests have failed, this is expected if offline');
+  loadContent() { 
     this.loadLocally()
     .then(offlineData => {
-      if (!offlineData.length) {
-        this.messageNoData();
-      } else {
-        this.messageOffline();
+      if (!offlineData.length){
+        this.loadFromNetwork();
+      } else{
+        this.messageOffline;
         this.shows = offlineData;
-        this.loadingDone(); 
+        this.rendered = true; 
+        this.loadFromNetwork();
       }
-    });
-  });
-} 
+    }).catch(err => {
+      console.warn(err);
+      this.loadFromNetwork();
+    })
+  } 
+
+  loadFromNetwork(){
+    this.getShows()
+    .then(dataFromNetwork => {
+      this.saveLocally(dataFromNetwork)
+      .then(() => {
+        this.shows = dataFromNetwork;
+        this.loadingDone(); 
+        this.setLastUpdated(new Date());
+      }).catch(err => {
+        this.messageSaveError();
+        console.warn(err);
+      });
+    }).catch(err => {
+      if(!this.shows.length){
+        this.messageNoData();
+      }else{
+        this.loadingDone();
+      }
+    })
+  }
 
   loadingDone(){
     this.rendered = true; 
