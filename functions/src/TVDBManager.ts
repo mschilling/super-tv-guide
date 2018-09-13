@@ -1,7 +1,12 @@
 const fs = require('fs');
 const axios = require('axios');
 const moment = require('moment');
+const functions = require('firebase-functions');
+const admin = require('firebase-admin');
 
+
+admin.initializeApp(functions.config().firebase);
+const db = admin.firestore();
 
 const fileLocation = './tvdb.json';
 
@@ -10,6 +15,7 @@ export class TVDBManager {
     apiKey: string;
     
     constructor() {
+        db.settings({ timestampsInSnapshots: true });
         this.setApiKey();
         axios.defaults.baseURL = 'https://api.thetvdb.com/';
     }
@@ -34,11 +40,50 @@ export class TVDBManager {
     }
 
     public async getFeed() {
+        let episodes: Array<object> = [];
+        const ids: Array<number> = [104271, 71424, 75805, 311900, 70710, 71998];
+        const foundIds: Array<number> = [];
+        const updateIds: Array<number> = [];
 
-        const ids = [104271, 311900, 75805, 71998, 70710, 71424];
+        await db.collection('episodes').get()
+            .then(snapshot => {
+                snapshot.forEach(doc => {
+                    const episode = doc.data();
+                    if (moment(episode.episodereleasedate) > moment() && moment(episode.episodereleasedate) < moment().add(7, 'days')) {
+                        episodes.push(episode);
+                        if (!this.arrayIncludes(foundIds, episode.serieid)) {
+                            foundIds.push(episode.serieid);
+                        }
+                    }
+                });
+            })
+            .catch(err => {
+                console.log(err);
+                episodes = [{ status: 'Error' }];
+            });
+
+        ids.forEach(id => {
+            if (!this.arrayIncludes(foundIds, id)) {
+                updateIds.push(id);
+            }
+        })
+        
+        if (updateIds.length > 0) {
+            this.updateFeed(ids)
+            .catch(err => {
+                console.log(err);
+            });
+        }
+
+        return new Promise((resolve, reject) => {
+            resolve(this.sortEpisodes(episodes));
+        });
+    }
+
+    public async updateFeed(_ids) {
 
         const series = [];
-        const episodes = [];
+        const ids: Array<number> = _ids;
 
         // Get all serie information
         let promises = [];
@@ -74,7 +119,7 @@ export class TVDBManager {
             console.log(error);
         });
         let count = 0;
-        await axios.all(episodePromises)
+        axios.all(episodePromises)
         .then((results) => {
             results.forEach(response => {
                 const episodeData = response['data']['data'];
@@ -83,9 +128,9 @@ export class TVDBManager {
                 episodeData.forEach(episode => {
 
                     if (episode.firstAired !== '') {
-                        if (moment(episode.firstAired) > moment() && moment(episode.firstAired) < moment().add(5, 'days')) {
+                        if (moment(episode.firstAired) > moment() && moment(episode.firstAired) < moment().add(14, 'days')) {
 
-                            episodes.push({
+                            db.collection('episodes').doc(episode.id + '').set({
                                 serieid: serieData.id,
                                 seriename: serieData.seriesName,
                                 serieimgurl: serieData.banner,
@@ -96,7 +141,7 @@ export class TVDBManager {
                                 episodedescription: episode.overview,
                                 episodereleasedate: episode.firstAired,
                                 episodereleasetime: serieAirTime,
-                                episoderuntime: serieData.runtime,
+                                episoderuntime: serieData.runtime
                             });
 
                         }
@@ -106,12 +151,6 @@ export class TVDBManager {
             });
         }).catch((error) => {
             console.log(error);
-        });
-
-        const sortedEpisodes = this.sortEpisodes(episodes);
-
-        return new Promise((resolve, reject) => {
-            resolve(sortedEpisodes);
         });
 
     }
@@ -147,6 +186,16 @@ export class TVDBManager {
         });
 
         return episodes;
+    }
+
+    private arrayIncludes(_array, _item) {
+        let found = false;
+        _array.forEach(item => {
+            if (item === _item) {
+                found = true;
+            }
+        })
+        return found;
     }
 
     private convertTo24Hour(_time): string {
