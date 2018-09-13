@@ -384,12 +384,50 @@ class myFeed extends PolymerElement {
             margin: 0;
             color: white;
           }
-          
+          .container {
+            position: fixed;
+            height: 100vh;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .backdrop {
+            width: 100%;
+            height: 100vh;
+            position: fixed;
+            background-color: rgba(36, 36, 36, 0.15);
+        }
+        .loader {
+          margin-top: -64px;
+          border: 8px solid #f3f3f3;
+          border-radius: 50%;
+          border-top: 8px solid #B71C1C;
+          width: 50px;
+          height: 50px;
+          -webkit-animation: spin 0.8s linear infinite; /* Safari */
+          animation: spin 0.8s linear infinite;
+        }
+        /* Safari */
+        @-webkit-keyframes spin {
+          0% { -webkit-transform: rotate(0deg); }
+          100% { -webkit-transform: rotate(360deg); }
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }  
       </style>
 
       <link rel="stylesheet" href="/src/style/skeleton.css">
       
+      
       <template is="dom-if" if="{{!rendered}}">
+        <div class="container">
+          <div class="backdrop"></div>
+          <div class="loader"></div>
+        </div>
         <div class="card feed-item"></div>
         <div class="card feed-item"></div>
         <div class="card feed-item"></div>
