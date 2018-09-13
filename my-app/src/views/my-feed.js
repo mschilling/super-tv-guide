@@ -6,6 +6,8 @@ import '@polymer/polymer/lib/elements/dom-repeat.js';
 
 import '../style/shared-styles.js';
 
+import {Icon} from "@material/mwc-icon"
+
 // Import IDB
 import '../js/idb-promised.js';
 
@@ -373,13 +375,18 @@ class myFeed extends PolymerElement {
             align-items: center;
             justify-content: center;
           }
-          .small-icon{
+          mwc-icon{
             font-size: 13pt !important;
             margin-right: 5px;
           }
+          mwc-icon.arrow_back{
+            font-size: 15pt !important;
+            margin: 0;
+            color: white;
+          }
+          
       </style>
 
-      <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
       <link rel="stylesheet" href="/src/style/skeleton.css">
       
       <template is="dom-if" if="{{!rendered}}">
@@ -398,11 +405,11 @@ class myFeed extends PolymerElement {
               <div class="divider"></div>
               <div class="row">
                 <div>
-                  <i class="material-icons small-icon">calendar_today</i>
+                  <mwc-icon>calendar_today</mwc-icon>
                   <p class="date go-up">[[formatDate(item.episodereleasedate)]]</p>
                 </div>
                 <div>
-                  <i class="material-icons small-icon">access_time</i>
+                  <mwc-icon>access_time</mwc-icon>
                   <p class="go-up">[[item.episodereleasetime]]</p>
                 </div>
                 <div>
@@ -426,11 +433,11 @@ class myFeed extends PolymerElement {
             <div class="divider"></div>
             <div class="row">
                 <div>
-                <i class="material-icons small-icon">calendar_today</i>
+                  <mwc-icon>calendar_today</mwc-icon>
                   <p class="date">[[formatDate(showInfo.episodereleasedate)]]</p>
                 </div>
                 <div>
-                  <i class="material-icons small-icon">access_time</i>
+                  <mwc-icon>access_time</mwc-icon>
                   <p>[[showInfo.episodereleasetime]]</p>
                 </div>
                 <div>
@@ -471,7 +478,7 @@ class myFeed extends PolymerElement {
      </div>
 
       <div id="back-btn" on-click="showDetails">
-        <i class="material-icons">arrow_back</i>
+        <mwc-icon class="arrow_back" >arrow_back</mwc-icon>
       </div>
     `;
   }
