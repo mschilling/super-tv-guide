@@ -39,6 +39,12 @@ class myFeed extends PolymerElement {
           return false;
         }
       },
+      noData: {
+        type: Boolean,
+        value() {
+          return false;
+        }
+      },
       rendered: {
         type: Boolean,
         value() {
@@ -84,8 +90,11 @@ class myFeed extends PolymerElement {
     }).catch(err => {
       if(!this.shows.length){
         this.messageNoData();
+        this.loadingDone(); 
+        this.noData = true;
       }else{
         this.loadingDone();
+        this.messageOffline();
       }
     })
   }
@@ -121,12 +130,12 @@ class myFeed extends PolymerElement {
     if (lastUpdated) {
       text += ' Last fetched server data: ' + lastUpdated;
     }
-    this.popup(text, "#FBC02D")
+    this.popup(text, "#FBC02D", true)
   }
 
   messageNoData() {
     // alert user that there is no data available
-    this.popup("You're offline and local data is unavailable", "#D32F2F")
+    this.popup("You're offline and local data is unavailable", "#D32F2F", false)
   }
 
   messageDataSaved() {
@@ -134,12 +143,12 @@ class myFeed extends PolymerElement {
     const lastUpdated = this.getLastUpdated();
     let text = "Server data was saved for offline mode";
     if (lastUpdated) { text += ' on ' + lastUpdated;}
-    this.popup(text, "#388E3C")
+    this.popup(text, "#388E3C", true)
   }
 
    messageSaveError() {
     //alert user that data couldn't be saved offline
-    this.popup("Server data couldn't be saved offline :(", "#C62828")
+    this.popup("Server data couldn't be saved offline :(", "#C62828", true)
   }
 
   getLastUpdated() {
@@ -150,7 +159,7 @@ class myFeed extends PolymerElement {
     localStorage.setItem('lastUpdated', date);
   }
 
-  popup(text, color){
+  popup(text, color, close){
 
     var newItem = document.createElement('div');
     newItem.id = "popup";
@@ -159,13 +168,15 @@ class myFeed extends PolymerElement {
 
     this.shadowRoot.appendChild(newItem); // Add the new item to the shadowroot
 
-    // Remove (and fade out) popup after a little while
-    setTimeout(() => {
-      newItem.classList.add("fadeout");
+    if(close){
+      // Remove (and fade out) popup after a little while
       setTimeout(() => {
-        newItem.remove();
-      }, 500);
-    }, 4000);
+        newItem.classList.add("fadeout");
+        setTimeout(() => {
+          newItem.remove();
+        }, 500);
+      }, 4000);
+    }
   }
 
   /* Find if the episode is aired today, tomorrow, has already been aired or will be */
@@ -434,6 +445,18 @@ class myFeed extends PolymerElement {
           width: 100%;
           margin-top: 15px;
         }
+        #no-data-container{
+          width: 100%;
+          height: calc(100vh - 100px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
+        #no-data-container mwc-icon{
+          font-size: 60pt !important;
+          color: #d8d8d8;
+        }
       </style>
 
       <link rel="stylesheet" href="/src/style/skeleton.css">
@@ -530,6 +553,12 @@ class myFeed extends PolymerElement {
       </template>
 
      </div>
+
+     <template is="dom-if" if="{{noData}}">
+          <div id="no-data-container">
+            <mwc-icon>error_outline</mwc-icon>
+          </div>
+      </template>
 
       <div id="back-btn" on-click="showDetails">
         <mwc-icon class="arrow_back" >arrow_back</mwc-icon>
