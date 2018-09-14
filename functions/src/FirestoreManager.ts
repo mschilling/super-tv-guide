@@ -36,7 +36,10 @@ export class FirestoreManager {
             })
         }
         
-        this.addSerieToDatabase(_serieid);
+        this.addSerieToDatabase(_serieid)
+        .catch(err => {
+            console.log(err);
+        });
 
         let userSeries: Array<string>;
 
@@ -94,7 +97,10 @@ export class FirestoreManager {
                         .catch(err => {
                             console.log(err);
                         });
-                    this.addSerieEpisodesToDatabase(_serieid, 1);
+                    this.addSerieEpisodesToDatabase(_serieid, 1)
+                    .catch(err => {
+                        console.log(err);
+                    });
                 }
             })
             .catch(err => {
@@ -123,10 +129,16 @@ export class FirestoreManager {
                 });
                 if (links.next !== null) {
                     if (links.last > 5 && page === 1) {
-                        this.addSerieEpisodesToDatabase(_serieid, links.last - 5);
+                        this.addSerieEpisodesToDatabase(_serieid, links.last - 5)
+                        .catch(err => {
+                            console.log(err);
+                        });
                     }
                     else {
-                        this.addSerieEpisodesToDatabase(_serieid, links.next);
+                        this.addSerieEpisodesToDatabase(_serieid, links.next)
+                        .catch(err => {
+                            console.log(err);
+                        });
                     }
                     
                 }
