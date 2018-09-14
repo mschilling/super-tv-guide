@@ -2,36 +2,33 @@ import * as functions from 'firebase-functions';
 import * as express from 'express';
 import * as cors from 'cors';
 
-import { feed } from './testfeed'; // Test feed with test data
-import { TVDBManager } from './TVDBManager';
+const admin = require('firebase-admin');
+admin.initializeApp(functions.config().firebase);
+
+import { FirestoreManager } from './FirestoreManager';
+import { feed } from './testfeed';
 
 const app = express();
 const router = express.Router();
 
-const tvdb = new TVDBManager();
+const fm = new FirestoreManager();
 
 // Automatically allow cross-origin requests
 app.use(cors({ origin: true }));
 
 router.get('/feed', (req, res) => {
-
-    tvdb.authenticate()
-        .then(() => {
-        async function getFeed() {
-            res.json(await tvdb.getFeed());
-        }
-        getFeed().catch(err => console.log(err));
-    })
-    .catch(err => console.log(err));
-
-});
-
-router.get('/testfeed', (req, res) => {
-
     res.json(feed);
-
 });
 
+router.get('/user/:userid/add/:serieid', async (req, res) => {
+    const userid = req.params.userid;
+    const serieid = req.params.serieid;
+    res.json(await fm.addSerieToUser(userid, serieid));
+});
+
+// router.get('/user/:userid/feed', async (req, res) => {
+//     res.json();
+// });
 
 
 app.use('/api', router);
