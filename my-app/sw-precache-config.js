@@ -18,5 +18,6 @@ module.exports = {
       urlPattern: /\/@webcomponents\/webcomponentsjs\//,
       handler: 'fastest'
     }
-  ]
+  ], navigateFallbackWhitelist: 
+  [/^(?!\/__)/, ' /getProjectConfig/']
 };
