@@ -17,6 +17,7 @@ class myFeed extends PolymerElement {
     super();
     myFeed.dbPromise = this.createIDB();
     this.loadContent();
+    this.backButtonControl();
   }
   
   static get properties() {
@@ -31,12 +32,6 @@ class myFeed extends PolymerElement {
         type: Array,
         value() {
           return [];
-        }
-      },
-      detailesOpened: {
-        type: Boolean,
-        value() {
-          return false;
         }
       },
       noData: {
@@ -565,20 +560,33 @@ class myFeed extends PolymerElement {
       </div>
     `;
   }
+  backButtonControl(){
+    window.onpopstate = function(event) {
+      // get feed object
+      let myFeed = document.querySelectorAll('my-app')[0].shadowRoot.querySelectorAll('my-feed')[0].shadowRoot;
+      // get show details container and back btn
+      let container = myFeed.getElementById("show-details");
+      let backbtn = myFeed.getElementById("back-btn");
+      if(container.classList.contains('open')){
+        container.classList.remove("open");
+        backbtn.classList.remove("open");
+      }
+    };
+  }
 
   showDetails(e) {
     // Set current show to the clicked one
     let container = this.shadowRoot.getElementById("show-details");
     let backbtn = this.shadowRoot.getElementById("back-btn");
-    if(!this.detailesOpened){
+    if(!(container.classList.contains('open'))){
       this.showInfo = e.model.item;
       container.classList.add("open");
       backbtn.classList.add("open");
-      this.detailesOpened = true;
+      window.history.pushState('forward', null, '/details')
     }else{
       container.classList.remove("open");
       backbtn.classList.remove("open");
-      this.detailesOpened = false;
+      window.history.back();
     }
   }
 
