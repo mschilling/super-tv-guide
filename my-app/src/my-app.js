@@ -115,6 +115,7 @@ class MyApp extends PolymerElement {
 
           <iron-pages selected="[[page]]" attr-for-selected="name" role="main">
             <my-feed name="feed"></my-feed>
+            <my-login name="login"></my-login>
             <my-view404 name="view404"></my-view404>
           </iron-pages>
         </app-header-layout>
@@ -130,7 +131,11 @@ class MyApp extends PolymerElement {
         observer: '_pageChanged'
       },
       routeData: Object,
-      subroute: Object
+      subroute: Object,
+      user: {
+        type: Object,
+        value: {},
+      },
     };
   }
 
@@ -140,18 +145,33 @@ class MyApp extends PolymerElement {
     ];
   }
 
+  connectedCallback() {
+    super.connectedCallback();
+    firebase.auth().onAuthStateChanged((currentUser) => {
+      if (currentUser) {
+        // <user is signed in>
+        this.user = currentUser;
+        this.page = 'feed';
+      }else{
+        this.user = {};
+        this.page = 'login';
+      }
+    })
+  }
+
   _routePageChanged(page) {
-     // Show the corresponding page according to the route.
-     //
-     // If no page was found in the route data, page will be an empty string.
-     // Show 'view1' in that case. And if the page doesn't exist, show 'view404'.
-    if (!page) {
-      this.page = 'feed';
-    } else if (['feed'].indexOf(page) !== -1) {
+    page = page != '' ? page : 'home';
+    switch (page) {
+    case 'feed':
       this.page = page;
-    } else {
-      this.page = 'view404';
+      break;
+    case 'login':
+      this.page = page;
+      break;
+    default:
+    page = 'my-404';
     }
+    this.page = page;
 
     // Close a non-persistent drawer when the page & route are changed.
     if (!this.$.drawer.persistent) {
@@ -171,6 +191,9 @@ class MyApp extends PolymerElement {
       case 'view404':
         import('./views/my-view404.js');
         break;
+      case 'login':
+      import('./views/my-login.js');
+      break;
     }
   }
 }
