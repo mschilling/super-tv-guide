@@ -16,7 +16,6 @@ class MyView404 extends PolymerElement {
       <style>
         :host {
           display: block;
-
           padding: 10px 20px;
         }
       </style>
