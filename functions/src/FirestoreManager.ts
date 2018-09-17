@@ -1,4 +1,6 @@
 
+const schedule = require('node-schedule');
+
 const admin = require('firebase-admin');
 const axios = require('axios');
 const moment = require('moment');
@@ -16,6 +18,7 @@ export class FirestoreManager {
     constructor() {
         const file = JSON.parse(fs.readFileSync(fileLocation, 'utf8'));
         this.apikey = file.apikey;
+        schedule.scheduleJob('0 0 * * *', this.update); // Schedule a update every day 00:00
     }
 
     public async addSerieToUser(_userid: string, _serieid: string)  {
@@ -256,6 +259,48 @@ export class FirestoreManager {
         });
     }
 
+    public async update() {
+        
+        console.log('Updating series...');
+
+        axios.defaults.baseURL = 'https://api.thetvdb.com/';
+        await this.authenticate();
+
+        const series = [];
+
+        const today = moment().utc();
+        today.hours(0).minutes(0).seconds(0).milliseconds(0);
+
+        await db.collection('SERIES').get()
+            .then(snapshot => {
+                snapshot.forEach(doc => {
+                    series.push(doc.data().id);
+                });
+            })
+            .catch(error => {
+                console.log(error);
+            })
+
+        axios.get(`/updated/query?fromTime=${today.unix()}&toTime=${today.add(1, 'd').unix()}`)
+            .then(result => {
+                result['data']['data'].forEach(update => {
+                    if (series.indexOf(update.id) > -1) {
+                        this.addSerieEpisodesToDatabase(update.id, 1)
+                            .catch(error => {
+                                console.log(error);
+                            });
+                    }
+                });
+            })
+            .catch(error => {
+                console.log(error);
+            });
+
+        return new Promise((resolve, reject) => {
+            resolve();
+        })
+    }
+
     private async authenticate() {
         return new Promise((resolve, reject) => {
             axios.post(`/login`, {
@@ -266,7 +311,7 @@ export class FirestoreManager {
             }).catch((error) => {
                 console.log(error);
                 reject();
-            }); 
+            });
         });
     }
 
