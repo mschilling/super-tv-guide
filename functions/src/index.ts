@@ -31,6 +31,9 @@ router.get('/user/:userid/feed', async (req, res) => {
     res.json(await fm.getUserFeed(userid));
 });
 
+router.get('/popular', async (req, res) => {
+    res.json(await fm.getPopularSeries());
+});
 
 app.use('/api', router);
 

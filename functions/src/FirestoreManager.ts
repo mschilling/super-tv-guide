@@ -238,6 +238,23 @@ export class FirestoreManager {
         })
     }
 
+    public async getPopularSeries() {
+        const popularSeries = [];
+        await db.collection('SERIES').orderBy('subscribers', 'desc').orderBy('name').limit(10).get()
+            .then(snapshot => {
+                snapshot.forEach(doc => {
+                    popularSeries.push(doc.data());
+                });
+            })
+            .catch(error => {
+                console.log(error);
+            });
+
+        return new Promise((resolve, reject) => {
+            resolve(popularSeries);
+        });
+    }
+
     private async authenticate() {
         return new Promise((resolve, reject) => {
             axios.post(`/login`, {
