@@ -116,6 +116,7 @@ class MyApp extends PolymerElement {
 
           <iron-pages selected="[[page]]" attr-for-selected="name" role="main">
             <my-feed name="feed"></my-feed>
+            <my-watchlist name="watchlist"></my-watchlist>
             <my-login name="login"></my-login>
             <my-account name="account"></my-account>
             <my-view404 name="view404"></my-view404>
@@ -170,6 +171,9 @@ class MyApp extends PolymerElement {
     case 'login':
       this.page = page;
       break;
+    case 'watchlist':
+      this.page = page;
+      break;
     case 'account':
       this.page = page;
     break;
@@ -192,6 +196,9 @@ class MyApp extends PolymerElement {
     switch (page) {
       case 'feed':
         import('./views/my-feed.js');
+        break;
+      case 'watchlist':
+        import('./views/my-watchlist.js');
         break;
       case 'view404':
         import('./views/my-view404.js');

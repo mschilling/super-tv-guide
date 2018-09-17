@@ -1,5 +1,5 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
-import {Button} from "@material/mwc-button"
+import {Button} from "@material/mwc-button";
 
 import '../style/shared-styles.js';
 
@@ -62,10 +62,16 @@ class MyAccount extends PolymerElement {
           float: left;
           width: calc(100% - 52px);
         }
+        .spacer{
+          float: left;
+          width: 100%;
+          height: 15px;
+      }
       </style>
 
       <div id="loader" class="anim"></div>
   
+      <div class="spacer"></div>
 
       <template is="dom-if" if="{{currentUser}}">
         <div class="card">
@@ -111,7 +117,6 @@ class MyAccount extends PolymerElement {
     firebase.auth().onAuthStateChanged((currentUser) => {
       if (currentUser) {
         this.currentUser = currentUser;
-        console.log(currentUser);
         this.loadingDone();
       }
     });
