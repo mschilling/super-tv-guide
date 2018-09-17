@@ -26,9 +26,10 @@ router.get('/user/:userid/add/:serieid', async (req, res) => {
     res.json(await fm.addSerieToUser(userid, serieid));
 });
 
-// router.get('/user/:userid/feed', async (req, res) => {
-//     res.json();
-// });
+router.get('/user/:userid/feed', async (req, res) => {
+    const userid = req.params.userid;
+    res.json(await fm.getUserFeed(userid));
+});
 
 
 app.use('/api', router);

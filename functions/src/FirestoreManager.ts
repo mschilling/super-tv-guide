@@ -1,3 +1,4 @@
+
 const admin = require('firebase-admin');
 const axios = require('axios');
 const moment = require('moment');
@@ -146,6 +147,85 @@ export class FirestoreManager {
             .catch(err => {
                 console.log(err);
             });
+    }
+
+    public async getUserFeed(_userid) {
+
+        let userSeries;
+        const userEpisodes = [];
+
+        await db.collection('USERS').doc(_userid).get()
+            .then(doc => {
+                if (doc.exists) {
+                    userSeries = doc.data().series;
+                }
+            })
+            .catch(err => {
+                console.log(err);
+            });
+
+        if (!userSeries) {
+            return new Promise((resolve, reject) => {
+                resolve({ error: 'user does not have any series.' });
+            })
+        }
+
+        for (const serieid of userSeries) {
+            let serie;
+            
+            await db.collection('SERIES').doc(serieid + '').get()
+                .then(doc => {
+                    serie = doc.data();
+                })
+                .catch(error => {
+                    console.log(error);
+                });
+
+            const today = moment();
+            await db.collection('EPISODES').where('serieid', '==', serieid).where('episodereleasedate', '>', today.format('YYYY-MM-DD')).where('episodereleasedate', '<', today.add(7, 'd').format('YYYY-MM-DD')).get()
+                .then(snapshot => {
+                    snapshot.forEach((doc) => {
+                        const episode = doc.data();
+                        userEpisodes.push({
+                            serieid: serie.id,
+                            seriename: serie.name,
+                            seasonnumber: episode.seasonnumber,
+                            episodenumber: episode.episodenumber,
+                            episodename: episode.episodename,
+                            episodedescription: episode.episodedescription,
+                            episodereleasedate: episode.episodereleasedate,
+                            episodereleasetime: serie.airtime
+                        });                       
+                    });
+                })
+                .catch(error => {
+                    console.log(error);
+                })
+        };
+
+        userEpisodes.sort(compare);
+        
+        function compare(a,b) {
+
+            if (a.episodereleasedate.split('-').join() === b.episodereleasedate.split('-').join()) {
+                if (a.episodereleasetime.split(':').join() > b.episodereleasetime.split(':').join() ) {
+                    return -1;
+                }
+                else if (a.episodereleasetime.split(':').join() < b.episodereleasetime.split(':').join() ) {
+                    return 1;
+                }
+            }
+
+            if (a.episodereleasedate.split('-').join() < b.episodereleasedate.split('-').join())
+                return -1;
+            else if (a.episodereleasedate.split('-').join() > b.episodereleasedate.split('-').join())
+                return 1;
+            return 0;
+        }
+
+        return new Promise((resolve, reject) => {
+            resolve(userEpisodes);
+        })
     }
 
     private async authenticate() {
