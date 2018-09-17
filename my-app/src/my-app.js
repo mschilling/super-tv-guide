@@ -100,7 +100,6 @@ class MyApp extends PolymerElement {
           <app-toolbar>Menu</app-toolbar>
           <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
             <a name="feed" href="[[rootPath]]feed">Feed</a>
-            <a name="watchlist" href="[[rootPath]]watchlist">Watchlist</a>
             <a name="account" href="[[rootPath]]account">Account</a>
           </iron-selector>
         </app-drawer>

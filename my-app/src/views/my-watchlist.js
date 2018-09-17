@@ -72,9 +72,30 @@ class MyWatchlist extends PolymerElement {
             border: 1px solid #eeeeee;
             border-bottom-right-radius: 5px;
         }
+        a{
+            color: #757575;
+        }
+        .popular-item{
+            color: #363636;
+        }
+        .popular-item p{
+            float: left
+            width: calc(100% - 30px);
+        }
+        .popular-item a{
+            width: 30px;
+            float: left;
+        }
+        .spacer{
+            float: left;
+            width: 100%;
+            height: 15px;
+        }
       </style>
+        <div class="spacer"></div>
         <div class="card">
             <h2>Add watchlist item</h2>
+            <p>Search on <a href="www.thetvdb.com">TVDB</a> for the serie ID, and enter it below. Or choose one of the most popular series below.</p>
             <form id="form" action="?">
                <div class="form-group">
                 <input id="serieid" type="text" name="serieid" placeholder="Serie ID">
@@ -84,25 +105,92 @@ class MyWatchlist extends PolymerElement {
                </div>
             </form> 
         </div>
+
+        <div class="card">
+            <h2>Popular shows</h2>
+            <p>Click on an item to add it to your feed.</p>
+            <template is="dom-repeat" items="{{shows}}">
+                <div class="popular-item" on-click="_addSerieWithId">
+                <a><mwc-icon class="arrow_back" >add</mwc-icon></a>
+                <p>[[item.name]]</p>
+                </div>
+            </template>
+        </div>
     `;
   }
   constructor(){
     super();
+    this.loadFromNetwork();
   }
 
+  static get properties() {
+    return {
+      shows: {
+        type: Array,
+        value() {
+          return [];
+        }
+      },
+      user: {
+          type: Object,
+          value() {
+              return null;
+          }
+      }
+    }
+}
+
   getUser(){
+    if(this.user){
+        return this.user;
+    }
     return new Promise(resolve => {
       firebase.auth().onAuthStateChanged((currentUser) => {
         if (currentUser) {
-          resolve(currentUser);
+            this.user = currentUser;
+            resolve(currentUser);
         }
       })
     })
   }
 
+  async loadFromNetwork(){
+    this.getPopularShows().then(shows => {
+        this.shows = shows;
+    })
+  }
+
+  getPopularShows() {
+    var request = `https://us-central1-super-tv-guide.cloudfunctions.net/api/api/popular`;
+    return fetch(request).then(response => {
+      if (!response.ok) {
+        throw Error(response.statusText);
+      }
+      return response.json();
+    });
+    
+  }
+
   async _addSerie(){
     let user = await this.getUser();
     let id = this.shadowRoot.getElementById("serieid").value;
+    if(!id){
+        console.log('Empty ID');
+    }else{
+        var request = `https://us-central1-super-tv-guide.cloudfunctions.net/api/api/user/${user.uid}/add/${id}`;
+    
+        return fetch(request).then(response => {
+            if (!response.ok) {
+                throw Error(response.statusText);
+            }
+            return response.json();
+        });
+    }
+  }
+
+  async _addSerieWithId(e){
+    let id = e.model.item.id;
+    let user = await this.getUser();
     if(!id){
         console.log('Empty ID');
     }else{

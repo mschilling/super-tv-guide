@@ -62,10 +62,16 @@ class MyAccount extends PolymerElement {
           float: left;
           width: calc(100% - 52px);
         }
+        .spacer{
+          float: left;
+          width: 100%;
+          height: 15px;
+      }
       </style>
 
       <div id="loader" class="anim"></div>
   
+      <div class="spacer"></div>
 
       <template is="dom-if" if="{{currentUser}}">
         <div class="card">
