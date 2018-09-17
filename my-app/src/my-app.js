@@ -100,6 +100,7 @@ class MyApp extends PolymerElement {
           <app-toolbar>Menu</app-toolbar>
           <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
             <a name="feed" href="[[rootPath]]feed">Feed</a>
+            <a name="account" href="[[rootPath]]account">Account</a>
           </iron-selector>
         </app-drawer>
 
@@ -116,8 +117,10 @@ class MyApp extends PolymerElement {
           <iron-pages selected="[[page]]" attr-for-selected="name" role="main">
             <my-feed name="feed"></my-feed>
             <my-login name="login"></my-login>
+            <my-account name="account"></my-account>
             <my-view404 name="view404"></my-view404>
           </iron-pages>
+
         </app-header-layout>
       </app-drawer-layout>
     `;
@@ -151,7 +154,6 @@ class MyApp extends PolymerElement {
       if (currentUser) {
         // <user is signed in>
         this.user = currentUser;
-        this.page = 'feed';
       }else{
         this.user = {};
         this.page = 'login';
@@ -160,7 +162,7 @@ class MyApp extends PolymerElement {
   }
 
   _routePageChanged(page) {
-    page = page != '' ? page : 'home';
+    page = page != '' ? page : 'feed';
     switch (page) {
     case 'feed':
       this.page = page;
@@ -168,8 +170,11 @@ class MyApp extends PolymerElement {
     case 'login':
       this.page = page;
       break;
+    case 'account':
+      this.page = page;
+    break;
     default:
-    page = 'my-404';
+      this.page = 'my-404';
     }
     this.page = page;
 
@@ -191,8 +196,11 @@ class MyApp extends PolymerElement {
       case 'view404':
         import('./views/my-view404.js');
         break;
+      case 'account':
+        import('./views/my-account.js');
+      break;
       case 'login':
-      import('./views/my-login.js');
+        import('./views/my-login.js');
       break;
     }
   }

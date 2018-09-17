@@ -260,7 +260,6 @@ class myFeed extends PolymerElement {
         <style include="shared-styles">
           :host {
             display: block;
-            
           }
           p{
             margin: 0;
