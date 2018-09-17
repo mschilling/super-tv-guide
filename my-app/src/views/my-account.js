@@ -111,7 +111,6 @@ class MyAccount extends PolymerElement {
     firebase.auth().onAuthStateChanged((currentUser) => {
       if (currentUser) {
         this.currentUser = currentUser;
-        console.log(currentUser);
         this.loadingDone();
       }
     });

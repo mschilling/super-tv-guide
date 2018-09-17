@@ -16,7 +16,7 @@ class myFeed extends PolymerElement {
   constructor() {
     super();
     myFeed.dbPromise = this.createIDB();
-    this.loadContent();
+    this.loadContentCacheFirst();
     this.backButtonControl();
   }
   
@@ -53,9 +53,8 @@ class myFeed extends PolymerElement {
   *  Make sure network content is loaded first,
   *  If network is not available: load local content.
   */ 
-  loadContent() { 
-    this.loadLocally()
-    .then(offlineData => {
+  loadContentCacheFirst() { 
+   this.loadLocally().then(offlineData => {
       if (!offlineData.length){
         this.loadFromNetwork();
       } else{
@@ -70,8 +69,9 @@ class myFeed extends PolymerElement {
     })
   } 
 
-  loadFromNetwork(){
-    this.getShows()
+  async loadFromNetwork(){
+    let user = await this.getUser();
+    this.getShows(user)
     .then(dataFromNetwork => {
       this.saveLocally(dataFromNetwork)
       .then(() => {
@@ -94,6 +94,16 @@ class myFeed extends PolymerElement {
     })
   }
 
+  getUser(){
+    return new Promise(resolve => {
+      firebase.auth().onAuthStateChanged((currentUser) => {
+        if (currentUser) {
+          resolve(currentUser);
+        }
+      })
+    })
+  }
+
   loadingDone(){
     this.rendered = true; 
     let loader = this.shadowRoot.getElementById("loader");
@@ -106,9 +116,13 @@ class myFeed extends PolymerElement {
   }
 
   /* Call API and return JSON data of the shows */
-  getShows() {
-    var request = 'https://us-central1-super-tv-guide.cloudfunctions.net/api/api/feed';
-   
+  getShows(user) {
+    if(!user){
+      throw Error("User not found");
+    }
+    
+    var request = `https://us-central1-super-tv-guide.cloudfunctions.net/api/api/user/${user.uid}/feed`;
+    
     return fetch(request).then(response => {
       if (!response.ok) {
         throw Error(response.statusText);
