@@ -37,11 +37,6 @@ export class FirestoreManager {
             })
         }
         
-        this.addSerieToDatabase(_serieid)
-        .catch(err => {
-            console.log(err);
-        });
-
         let userSeries: Array<string>;
 
         // Check if the user already has series.
@@ -64,10 +59,14 @@ export class FirestoreManager {
         // If the user doesnt have the serie add it.
         if (userSeries.indexOf(_serieid) === -1) {
             userSeries.push(_serieid);
+            this.addSerieToDatabase(_serieid)
+                .catch(err => {
+                    console.log(err);
+                });
             status = { status: `Completed, added ${_serieid} to user ${_userid}` };
         }
         else {
-            status = { denied: `Denied, user ${_userid} already has ${_serieid} to ` };
+            status = { denied: `Denied, user ${_userid} already has ${_serieid}` };
         }
         
         // Add the series to the user.
@@ -92,7 +91,8 @@ export class FirestoreManager {
                                 id: result['data']['data'].id,
                                 name: result['data']['data'].seriesName,
                                 airtime: this.convertTo24Hour(result['data']['data'].airsTime),
-                                runtime: result['data']['data'].runtime
+                                runtime: result['data']['data'].runtime,
+                                subscribers: 1
                             });
                         })
                         .catch(err => {
@@ -101,6 +101,16 @@ export class FirestoreManager {
                     this.addSerieEpisodesToDatabase(_serieid, 1)
                     .catch(err => {
                         console.log(err);
+                    });
+                }
+                else {
+                    const data = doc.data();
+                    db.collection('SERIES').doc(data.id + '').set({
+                        id: data.id,
+                        name: data.name,
+                        airtime: data.airtime,
+                        runtime: data.runtime,
+                        subscribers: data.subscribers + 1
                     });
                 }
             })
