@@ -1,3 +1,4 @@
+
 const admin = require('firebase-admin');
 const axios = require('axios');
 const moment = require('moment');
@@ -36,11 +37,6 @@ export class FirestoreManager {
             })
         }
         
-        this.addSerieToDatabase(_serieid)
-        .catch(err => {
-            console.log(err);
-        });
-
         let userSeries: Array<string>;
 
         // Check if the user already has series.
@@ -63,10 +59,14 @@ export class FirestoreManager {
         // If the user doesnt have the serie add it.
         if (userSeries.indexOf(_serieid) === -1) {
             userSeries.push(_serieid);
+            this.addSerieToDatabase(_serieid)
+                .catch(err => {
+                    console.log(err);
+                });
             status = { status: `Completed, added ${_serieid} to user ${_userid}` };
         }
         else {
-            status = { denied: `Denied, user ${_userid} already has ${_serieid} to ` };
+            status = { denied: `Denied, user ${_userid} already has ${_serieid}` };
         }
         
         // Add the series to the user.
@@ -91,7 +91,8 @@ export class FirestoreManager {
                                 id: result['data']['data'].id,
                                 name: result['data']['data'].seriesName,
                                 airtime: this.convertTo24Hour(result['data']['data'].airsTime),
-                                runtime: result['data']['data'].runtime
+                                runtime: result['data']['data'].runtime,
+                                subscribers: 1
                             });
                         })
                         .catch(err => {
@@ -100,6 +101,16 @@ export class FirestoreManager {
                     this.addSerieEpisodesToDatabase(_serieid, 1)
                     .catch(err => {
                         console.log(err);
+                    });
+                }
+                else {
+                    const data = doc.data();
+                    db.collection('SERIES').doc(data.id + '').set({
+                        id: data.id,
+                        name: data.name,
+                        airtime: data.airtime,
+                        runtime: data.runtime,
+                        subscribers: data.subscribers + 1
                     });
                 }
             })
@@ -146,6 +157,85 @@ export class FirestoreManager {
             .catch(err => {
                 console.log(err);
             });
+    }
+
+    public async getUserFeed(_userid) {
+
+        let userSeries;
+        const userEpisodes = [];
+
+        await db.collection('USERS').doc(_userid).get()
+            .then(doc => {
+                if (doc.exists) {
+                    userSeries = doc.data().series;
+                }
+            })
+            .catch(err => {
+                console.log(err);
+            });
+
+        if (!userSeries) {
+            return new Promise((resolve, reject) => {
+                resolve({ error: 'user does not have any series.' });
+            })
+        }
+
+        for (const serieid of userSeries) {
+            let serie;
+            
+            await db.collection('SERIES').doc(serieid + '').get()
+                .then(doc => {
+                    serie = doc.data();
+                })
+                .catch(error => {
+                    console.log(error);
+                });
+
+            const today = moment();
+            await db.collection('EPISODES').where('serieid', '==', serieid).where('episodereleasedate', '>', today.format('YYYY-MM-DD')).where('episodereleasedate', '<', today.add(7, 'd').format('YYYY-MM-DD')).get()
+                .then(snapshot => {
+                    snapshot.forEach((doc) => {
+                        const episode = doc.data();
+                        userEpisodes.push({
+                            serieid: serie.id,
+                            seriename: serie.name,
+                            seasonnumber: episode.seasonnumber,
+                            episodenumber: episode.episodenumber,
+                            episodename: episode.episodename,
+                            episodedescription: episode.episodedescription,
+                            episodereleasedate: episode.episodereleasedate,
+                            episodereleasetime: serie.airtime
+                        });                       
+                    });
+                })
+                .catch(error => {
+                    console.log(error);
+                })
+        };
+
+        userEpisodes.sort(compare);
+        
+        function compare(a,b) {
+
+            if (a.episodereleasedate.split('-').join() === b.episodereleasedate.split('-').join()) {
+                if (a.episodereleasetime.split(':').join() > b.episodereleasetime.split(':').join() ) {
+                    return -1;
+                }
+                else if (a.episodereleasetime.split(':').join() < b.episodereleasetime.split(':').join() ) {
+                    return 1;
+                }
+            }
+
+            if (a.episodereleasedate.split('-').join() < b.episodereleasedate.split('-').join())
+                return -1;
+            else if (a.episodereleasedate.split('-').join() > b.episodereleasedate.split('-').join())
+                return 1;
+            return 0;
+        }
+
+        return new Promise((resolve, reject) => {
+            resolve(userEpisodes);
+        })
     }
 
     private async authenticate() {
