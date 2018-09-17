@@ -192,7 +192,7 @@ export class FirestoreManager {
                 });
 
             const today = moment();
-            await db.collection('EPISODES').where('serieid', '==', serieid).where('episodereleasedate', '>', today.format('YYYY-MM-DD')).where('episodereleasedate', '<', today.add(7, 'd').format('YYYY-MM-DD')).get()
+            await db.collection('EPISODES').where('serieid', '==', serieid).where('episodereleasedate', '>', today.format('YYYY-MM-DD')).where('episodereleasedate', '<', today.add(14, 'd').format('YYYY-MM-DD')).get()
                 .then(snapshot => {
                     snapshot.forEach((doc) => {
                         const episode = doc.data();
@@ -214,6 +214,7 @@ export class FirestoreManager {
         };
 
         userEpisodes.sort(compare);
+        const firstFifteen = userEpisodes.slice(0, 15);
         
         function compare(a,b) {
 
@@ -234,7 +235,7 @@ export class FirestoreManager {
         }
 
         return new Promise((resolve, reject) => {
-            resolve(userEpisodes);
+            resolve(firstFifteen);
         })
     }
 
