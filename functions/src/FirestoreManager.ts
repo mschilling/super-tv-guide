@@ -1,5 +1,5 @@
 
-import schedule from 'node-schedule';
+const schedule = require('node-schedule');
 
 const admin = require('firebase-admin');
 const axios = require('axios');
