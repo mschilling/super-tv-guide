@@ -1,5 +1,5 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
-import {Button} from "@material/mwc-button"
+import {Button} from "@material/mwc-button";
 
 import '../style/shared-styles.js';
 

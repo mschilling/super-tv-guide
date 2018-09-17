@@ -120,7 +120,7 @@ class myFeed extends PolymerElement {
     if(!user){
       throw Error("User not found");
     }
-    
+
     var request = `https://us-central1-super-tv-guide.cloudfunctions.net/api/api/user/${user.uid}/feed`;
     
     return fetch(request).then(response => {
@@ -376,18 +376,29 @@ class myFeed extends PolymerElement {
             height: 100%;
             object-fit: cover;
           }
-          #back-btn{
+          .floating-btn{
             position: fixed;
             background-color: #b71c1c;
             border-radius: 50%;
             height: 60px;
             width: 60px;
-            bottom: 25px;
-            left: 25px;
             display: flex;
             justify-content: center;
             align-items: center;
             box-shadow: 2px 2px 20px rgba(0,0,0,0.4);
+          }
+          #add-btn{
+            right: 25px;
+            bottom: 25px;
+            transition: opacity 100ms ease-in-out;
+            opacity: 1;
+          }
+          #add-btn.closed{
+            opacity: 0;
+          }
+          #back-btn{
+            bottom: 25px;
+            left: 25px;
             opacity: 0;
             transition: opacity 200ms ease-in-out;
           }
@@ -395,7 +406,7 @@ class myFeed extends PolymerElement {
             opacity: 1;
             transition: opacity 250ms ease-in-out 125ms;
           }
-          #back-btn i{
+          .floating-btn i{
             color: white;
           }
           #detailed-content{
@@ -509,7 +520,7 @@ class myFeed extends PolymerElement {
       <template is="dom-if" if="{{showInfo.serieid}}">
 
           <div id="header-img">
-              <img src="https://www.thetvdb.com/banners/fanart/original/[[showInfo.serieid]]-1.jpg" alt="Serie banner">
+              <img src="https://www.thetvdb.com/banners/fanart/original/[[showInfo.serieid]]-2.jpg" alt="Serie banner">
           </div>
 
           <div id="show-details-body" class="card">
@@ -568,7 +579,11 @@ class myFeed extends PolymerElement {
           </div>
       </template>
 
-      <div id="back-btn" on-click="showDetails">
+      <a id="add-btn" class="floating-btn" href="[[rootPath]]watchlist">
+        <mwc-icon class="arrow_back" >add</mwc-icon>
+      </a>
+
+      <div id="back-btn" class="floating-btn" on-click="showDetails">
         <mwc-icon class="arrow_back" >arrow_back</mwc-icon>
       </div>
     `;
@@ -580,9 +595,11 @@ class myFeed extends PolymerElement {
       // get show details container and back btn
       let container = myFeed.getElementById("show-details");
       let backbtn = myFeed.getElementById("back-btn");
+      let addbtn = myFeed.getElementById("add-btn");
       if(container.classList.contains('open')){
         container.classList.remove("open");
         backbtn.classList.remove("open");
+        addbtn.classList.remove("closed");
       }
     };
   }
@@ -591,14 +608,17 @@ class myFeed extends PolymerElement {
     // Set current show to the clicked one
     let container = this.shadowRoot.getElementById("show-details");
     let backbtn = this.shadowRoot.getElementById("back-btn");
+    let addbtn = this.shadowRoot.getElementById("add-btn");
     if(!(container.classList.contains('open'))){
       this.showInfo = e.model.item;
       container.classList.add("open");
       backbtn.classList.add("open");
+      addbtn.classList.add("closed");
       window.history.pushState('forward', null, '/details')
     }else{
       container.classList.remove("open");
       backbtn.classList.remove("open");
+      addbtn.classList.remove("closed");
       window.history.back();
     }
   }
