@@ -40,6 +40,12 @@ class myFeed extends PolymerElement {
           return false;
         }
       },
+      noSeries: {
+        type: Boolean,
+        value() {
+          return false;
+        }
+      },
       rendered: {
         type: Boolean,
         value() {
@@ -79,8 +85,13 @@ class myFeed extends PolymerElement {
         this.loadingDone(); 
         this.setLastUpdated(new Date());
       }).catch(err => {
-        this.messageSaveError();
-        console.warn(err);
+        if(dataFromNetwork.error){
+          console.log(dataFromNetwork.error);
+          this.noSeries = true;
+        }else{
+          this.messageSaveError();
+        }
+        this.loadingDone();
       });
     }).catch(err => {
       if(!this.shows.length){
@@ -464,7 +475,7 @@ class myFeed extends PolymerElement {
           width: 100%;
           margin-top: 15px;
         }
-        #no-data-container{
+        .error-container{
           width: 100%;
           height: calc(100vh - 100px);
           display: flex;
@@ -472,7 +483,7 @@ class myFeed extends PolymerElement {
           justify-content: center;
           flex-wrap: wrap;
         }
-        #no-data-container mwc-icon{
+        .error-container mwc-icon{
           font-size: 60pt !important;
           color: #d8d8d8;
         }
@@ -573,9 +584,15 @@ class myFeed extends PolymerElement {
 
      </div>
 
-     <template is="dom-if" if="{{noData}}">
-          <div id="no-data-container">
+      <template is="dom-if" if="{{noData}}">
+          <div class="error-container">
             <mwc-icon>error_outline</mwc-icon>
+          </div>
+      </template>
+
+      <template is="dom-if" if="{{noSeries}}">
+          <div class="error-container">
+            <mwc-icon>sentiment_dissatisfied</mwc-icon>
           </div>
       </template>
 
