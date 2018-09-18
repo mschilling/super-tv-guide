@@ -231,7 +231,7 @@ class myFeed extends PolymerElement {
     if(response.status){
       switch (response.status) {
         case '404-1':
-            // User does not have any series.
+            // User does not have any series
             this.noSeries = true;
             this.toast('no-series');
             break;
