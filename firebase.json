@@ -11,7 +11,7 @@
     "source": "functions"
   },
   "hosting": {
-    "public": "my-app/build/es5-bundled",
+    "public": "frontend/build/es5-bundled",
     "ignore": [
       "firebase.json",
       "**/.*"
