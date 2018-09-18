@@ -121,13 +121,15 @@ class MyWatchlist extends PolymerElement {
         </div>
 
         <!-- Toast messages -->
-      <paper-toast id="toast-incorrect-serie" class="fit-bottom toast-error" duration="3000" text="Serie ID incorrect!"></paper-toast>
+      <paper-toast id="toast-incorrect-id" class="fit-bottom toast-error" duration="3000" text="Serie ID incorrect."></paper-toast>
         
       <paper-toast id="toast-empty" class="fit-bottom toast-warning" duration="3000" text="Please fill in the field."></paper-toast>
 
-      <paper-toast id="toast-couldnt-add" class="fit-bottom toast-error" duration="3000" text="Couldn't add serie to your watchlist."></paper-toast>
+      <paper-toast id="toast-something-wrong" class="fit-bottom toast-error" duration="4000" text="Something went wrong while adding the serie to your watchlist."></paper-toast>
       
       <paper-toast id="toast-no-popular" class="fit-bottom toast-warning" duration="3000" text="Couldn't retrieve popular series."></paper-toast>
+
+      <paper-toast id="toast-already-added" class="fit-bottom toast-warning" duration="3000" text="This serie is already in your watchlist."></paper-toast>
 
       <paper-toast id="toast-added" class="fit-bottom toast-succes" duration="3000" text="Serie added to your watchlist!"></paper-toast>
 
@@ -208,37 +210,56 @@ class MyWatchlist extends PolymerElement {
 
   async _addSerie(){
     let user = await this.getUser();
-    let id = this.shadowRoot.getElementById("serieid").value;
-    if(!id){
+    let serie = this.shadowRoot.getElementById("serieid").value;
+    if(!serie){
         this.toast('empty');
     }else{
-        var request = `https://us-central1-super-tv-guide.cloudfunctions.net/api/api/user/${user.uid}/add/${id}`;
-    
-        return fetch(request).then(response => {
-            if (!response.ok) {
-                this.toast('couldnt-add');
-            }
-            this.toast('added');
-            return response.json();
-        });
+        this.addSerie(user, serie).then(response => {
+            this.giveResponse(response);
+        })
     }
   }
 
-  async _addSerieWithId(e){
-    let id = e.model.item.id;
-    let user = await this.getUser();
-    if(!id){
-        console.log('Empty ID');
-    }else{
-        var request = `https://us-central1-super-tv-guide.cloudfunctions.net/api/api/user/${user.uid}/add/${id}`;
+  addSerie(user, serie){
+    var request = `https://us-central1-super-tv-guide.cloudfunctions.net/api/api/user/${user.uid}/add/${serie}`;
     
-        return fetch(request).then(response => {
+    return fetch(request).then(response => {
         if (!response.ok) {
-            this.toast('couldnt-add');
+            this.toast('something-wrong');
         }
-        this.toast('added');
         return response.json();
-        });
+    });
+  }
+
+  async _addSerieWithId(e){
+    let serie = e.model.item.id;
+    let user = await this.getUser();
+    if(!serie){
+        this.toast('empty');
+    }else{
+        this.addSerie(user, serie).then(response => {
+            this.giveResponse(response);
+        })
+    }
+  }
+
+  giveResponse(response){
+    switch (response.status) {
+        case 200:
+            // OK
+            this.toast('added');
+            break;
+        case 400:
+            // Serie ID is wrong
+            this.toast('incorrect-id');
+            break;
+        case 409:
+            // User already has serie
+            this.toast('already-added');
+            break;
+        default:
+            // Something else went wrong
+            this.toast('something-wrong'); 
     }
   }
 
