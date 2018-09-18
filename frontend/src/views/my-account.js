@@ -1,5 +1,5 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
-import {Button} from "@material/mwc-button";
+import '@polymer/paper-button/paper-button.js';
 
 import '../style/shared-styles.js';
 
@@ -82,7 +82,15 @@ class MyAccount extends PolymerElement {
             <p class="user-name">{{currentUser.displayName}}</p>
           </div>
           <div class="center">
-            <mwc-button class="button" on-click="_signOut" >Sign Out</mwc-button>
+            <paper-button class="custom" on-click="_signOut">Sign out</paper-button>
+            <custom-style>
+              <style>
+                paper-button.custom {
+                  color: #B71C1C;
+                  --paper-button-ink-color: #f3f3f3;
+                }
+              </style>
+            </custom-style>
           </div>
         </div>
       </template>
