@@ -88,17 +88,13 @@ class myFeed extends PolymerElement {
     let user = await this.getUser();
     this.getShows(user)
     .then(dataFromNetwork => {
+      this.giveResponse(dataFromNetwork);
       this.saveLocally(dataFromNetwork)
       .then(() => {
         this.shows = dataFromNetwork;
         this.loadingDone(); 
       }).catch(err => {
-        if(dataFromNetwork.error){
-          this.noSeries = true;
-          this.toast('no-series');
-        }else{
-          console.log("Could not save data");
-        }
+          console.log("Could not save data. This is expected if the user has no series or no data could be retrieved.");
         this.loadingDone();
       });
     }).catch(err => {
@@ -229,6 +225,30 @@ class myFeed extends PolymerElement {
           throw Error('Objectstore could not be cleared');
         });
       });
+  }
+
+  async giveResponse(response){
+    if(response.status){
+      switch (response.status) {
+        case '404-1':
+            // User does not have any series.
+            this.noSeries = true;
+            this.toast('no-series');
+            break;
+        case '404-2':
+            // No upcoming shows currently
+            this.toast('no-upcoming');
+            break;
+        default:
+            // Something else went wrong
+            this.toast('something-wrong'); 
+      }
+    } else if (response[0].seriename){
+      // Seems like everything went OK
+    } else{
+      // Error somewhere else?
+      this.toast('something-wrong'); 
+    }
   }
 
   toast(item){
@@ -560,13 +580,17 @@ class myFeed extends PolymerElement {
       </div>
 
       <!-- Toast messages -->
-      <paper-toast id="toast-offline" class="fit-bottom toast-warning" duration="5000" text="You're offline and seeing local data."></paper-toast>
-   
-      <paper-toast id="toast-no-series" class="fit-bottom toast-warning" duration="5000" text="You don't have any series. Try adding a few by clicking the button in the right bottom corner."></paper-toast>
+      <paper-toast id="toast-offline" class="fit-bottom toast-warning" duration="4000" text="You're offline and seeing local data."></paper-toast>
+        
+      <paper-toast id="toast-no-upcoming" class="fit-bottom toast-warning" duration="4000" text="There are currently no upcoming shows for you :(. Try adding a few more shows! :)"></paper-toast>
+
+      <paper-toast id="toast-no-series" class="fit-bottom toast-warning" duration="5000" text="You don't have any series :( Try adding a few by clicking the button in the right bottom corner."></paper-toast>
       
       <paper-toast id="toast-no-data" class="fit-bottom toast-error" duration="0" text="You're offline and don't have any local data. Try refreshing when you've got an internet connection.">
         <paper-button class="error" onclick="document.querySelectorAll('my-app')[0].shadowRoot.querySelectorAll('my-feed')[0].shadowRoot.getElementById('toast-no-data').close()">Close</paper-button>
       </paper-toast>
+
+      <paper-toast id="toast-something-wrong" class="fit-bottom toast-error" duration="5000" text="Something went wrong! :O Please try refreshing after a few seconds."></paper-toast>
 
       <custom-style><style is="custom-style">
         .toast-error {
