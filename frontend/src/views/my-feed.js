@@ -8,6 +8,10 @@ import '../style/shared-styles.js';
 
 import {Icon} from "@material/mwc-icon"
 
+import '@polymer/paper-toast/paper-toast.js';
+import '@polymer/paper-button/paper-button.js';
+
+
 // Import IDB
 import '../js/idb-promised.js';
 
@@ -46,6 +50,12 @@ class myFeed extends PolymerElement {
           return false;
         }
       },
+      lastUpdated: {
+        type: String,
+        value(){
+          return '';
+        }
+      },
       rendered: {
         type: Boolean,
         value() {
@@ -64,7 +74,6 @@ class myFeed extends PolymerElement {
       if (!offlineData.length){
         this.loadFromNetwork();
       } else{
-        this.messageOffline;
         this.shows = offlineData;
         this.rendered = true; 
         this.loadFromNetwork();
@@ -83,24 +92,23 @@ class myFeed extends PolymerElement {
       .then(() => {
         this.shows = dataFromNetwork;
         this.loadingDone(); 
-        this.setLastUpdated(new Date());
       }).catch(err => {
         if(dataFromNetwork.error){
-          console.log(dataFromNetwork.error);
           this.noSeries = true;
+          this.toast('no-series');
         }else{
-          this.messageSaveError();
+          console.log("Could not save data");
         }
         this.loadingDone();
       });
     }).catch(err => {
       if(!this.shows.length){
-        this.messageNoData();
+        this.toast('no-data');
         this.loadingDone(); 
         this.noData = true;
       }else{
+        this.toast('offline');
         this.loadingDone();
-        this.messageOffline();
       }
     })
   }
@@ -140,63 +148,6 @@ class myFeed extends PolymerElement {
       }
       return response.json();
     });
-    
-  }
-
-  messageOffline() {
-    // alert user that data may not be current
-    const lastUpdated = this.getLastUpdated();
-    let text = "You're offline and viewing stored data <br>"
-    if (lastUpdated) {
-      text += ' Last fetched server data: ' + lastUpdated;
-    }
-    this.popup(text, "#FBC02D", true)
-  }
-
-  messageNoData() {
-    // alert user that there is no data available
-    this.popup("You're offline and local data is unavailable", "#D32F2F", false)
-  }
-
-  messageDataSaved() {
-    //alert user that data has been saved for offline
-    const lastUpdated = this.getLastUpdated();
-    let text = "Server data was saved for offline mode";
-    if (lastUpdated) { text += ' on ' + lastUpdated;}
-    this.popup(text, "#388E3C", true)
-  }
-
-   messageSaveError() {
-    //alert user that data couldn't be saved offline
-    this.popup("Server data couldn't be saved offline :(", "#C62828", true)
-  }
-
-  getLastUpdated() {
-    return localStorage.getItem('lastUpdated');
-  }
-
-  setLastUpdated(date) {
-    localStorage.setItem('lastUpdated', date);
-  }
-
-  popup(text, color, close){
-
-    var newItem = document.createElement('div');
-    newItem.id = "popup";
-    newItem.innerHTML = '<p class="dateWritten">' + text + '</p>';
-    newItem.style.backgroundColor = color;
-
-    this.shadowRoot.appendChild(newItem); // Add the new item to the shadowroot
-
-    if(close){
-      // Remove (and fade out) popup after a little while
-      setTimeout(() => {
-        newItem.classList.add("fadeout");
-        setTimeout(() => {
-          newItem.remove();
-        }, 500);
-      }, 4000);
-    }
   }
 
   /* Find if the episode is aired today, tomorrow, has already been aired or will be */
@@ -278,6 +229,10 @@ class myFeed extends PolymerElement {
           throw Error('Objectstore could not be cleared');
         });
       });
+  }
+
+  toast(item){
+    this.shadowRoot.getElementById(`toast-${item}`).open();
   }
   
   static get template() {
@@ -603,6 +558,32 @@ class myFeed extends PolymerElement {
       <div id="back-btn" class="floating-btn" on-click="showDetails">
         <mwc-icon class="arrow_back" >arrow_back</mwc-icon>
       </div>
+
+      <!-- Toast messages -->
+      <paper-toast id="toast-offline" class="fit-bottom toast-warning" duration="5000" text="You're offline and seeing local data."></paper-toast>
+   
+      <paper-toast id="toast-no-series" class="fit-bottom toast-warning" duration="5000" text="You don't have any series. Try adding a few by clicking the button in the right bottom corner."></paper-toast>
+      
+      <paper-toast id="toast-no-data" class="fit-bottom toast-error" duration="0" text="You're offline and don't have any local data. Try refreshing when you've got an internet connection.">
+        <paper-button class="error" onclick="document.querySelectorAll('my-app')[0].shadowRoot.querySelectorAll('my-feed')[0].shadowRoot.getElementById('toast-no-data').close()">Close</paper-button>
+      </paper-toast>
+
+      <custom-style><style is="custom-style">
+        .toast-error {
+          --paper-toast-background-color: #B71C1C;
+          --paper-toast-color: white;
+        }
+        .toast-warning{
+          --paper-toast-background-color: #FFB300;
+          --paper-toast-color: white;
+        }
+        paper-button.error {
+          float: right;
+          margin-top: 10px;
+          color: white;
+          --paper-button-ink-color: #f3f3f3;
+        }
+      </style></custom-style>
     `;
   }
   backButtonControl(){
