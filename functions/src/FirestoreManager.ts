@@ -36,7 +36,7 @@ export class FirestoreManager {
             });
         if (!legitSerie) {
             return new Promise((resolve, reject) => {
-                resolve({ status: `Denied, ${_serieid} is not a serie` });
+                resolve({ status: 400 });
             })
         }
         
@@ -66,10 +66,10 @@ export class FirestoreManager {
                 .catch(err => {
                     console.log(err);
                 });
-            status = { status: `Completed, added ${_serieid} to user ${_userid}` };
+            status = { status: 200 };
         }
         else {
-            status = { denied: `Denied, user ${_userid} already has ${_serieid}` };
+            status = { status: 409 };
         }
         
         // Add the series to the user.
@@ -179,7 +179,7 @@ export class FirestoreManager {
 
         if (!userSeries) {
             return new Promise((resolve, reject) => {
-                resolve({ error: 'user does not have any series.' });
+                resolve({ status: '404-1' });
             })
         }
 
@@ -238,6 +238,11 @@ export class FirestoreManager {
         }
 
         return new Promise((resolve, reject) => {
+            if (firstFifteen.length <= 0) {
+                resolve({ status: '404-2'});
+                return;
+            }
+
             resolve(firstFifteen);
         })
     }
