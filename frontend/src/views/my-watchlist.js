@@ -14,6 +14,9 @@ import '../style/shared-styles.js';
 
 import {Icon} from "@material/mwc-icon";
 
+import '@polymer/paper-toast/paper-toast.js';
+import '@polymer/paper-button/paper-button.js';
+
 class MyWatchlist extends PolymerElement {
   static get template() {
     return html`
@@ -116,6 +119,38 @@ class MyWatchlist extends PolymerElement {
                 </div>
             </template>
         </div>
+
+        <!-- Toast messages -->
+      <paper-toast id="toast-incorrect-serie" class="fit-bottom toast-error" duration="3000" text="Serie ID incorrect!"></paper-toast>
+        
+      <paper-toast id="toast-empty" class="fit-bottom toast-warning" duration="3000" text="Please fill in the field."></paper-toast>
+
+      <paper-toast id="toast-couldnt-add" class="fit-bottom toast-error" duration="3000" text="Couldn't add serie to your watchlist."></paper-toast>
+      
+      <paper-toast id="toast-no-popular" class="fit-bottom toast-warning" duration="3000" text="Couldn't retrieve popular series."></paper-toast>
+
+      <paper-toast id="toast-added" class="fit-bottom toast-succes" duration="3000" text="Serie added to your watchlist!"></paper-toast>
+
+      <custom-style><style is="custom-style">
+        .toast-error {
+          --paper-toast-background-color: #B71C1C;
+          --paper-toast-color: white;
+        }
+        .toast-warning{
+          --paper-toast-background-color: #FFB300;
+          --paper-toast-color: white;
+        }
+        .toast-succes{
+            --paper-toast-background-color: #43A047;
+          --paper-toast-color: white;
+        }
+        paper-button.error {
+          float: right;
+          margin-top: 10px;
+          color: white;
+          --paper-button-ink-color: #f3f3f3;
+        }
+      </style></custom-style>
     `;
   }
   constructor(){
@@ -164,7 +199,7 @@ class MyWatchlist extends PolymerElement {
     var request = `https://us-central1-super-tv-guide.cloudfunctions.net/api/api/popular`;
     return fetch(request).then(response => {
       if (!response.ok) {
-        throw Error(response.statusText);
+        this.toast('no-popular')
       }
       return response.json();
     });
@@ -175,14 +210,15 @@ class MyWatchlist extends PolymerElement {
     let user = await this.getUser();
     let id = this.shadowRoot.getElementById("serieid").value;
     if(!id){
-        console.log('Empty ID');
+        this.toast('empty');
     }else{
         var request = `https://us-central1-super-tv-guide.cloudfunctions.net/api/api/user/${user.uid}/add/${id}`;
     
         return fetch(request).then(response => {
             if (!response.ok) {
-                throw Error(response.statusText);
+                this.toast('couldnt-add');
             }
+            this.toast('added');
             return response.json();
         });
     }
@@ -198,12 +234,18 @@ class MyWatchlist extends PolymerElement {
     
         return fetch(request).then(response => {
         if (!response.ok) {
-            throw Error(response.statusText);
+            this.toast('couldnt-add');
         }
+        this.toast('added');
         return response.json();
         });
     }
   }
+
+  toast(item){
+    this.shadowRoot.getElementById(`toast-${item}`).open();
+  }
+
 }
 
 window.customElements.define('my-watchlist', MyWatchlist);
