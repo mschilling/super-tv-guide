@@ -178,9 +178,12 @@ class MyApp extends PolymerElement {
       this.page = page;
     break;
     default:
-      this.page = 'my-404';
+      this.page = 'feed';
+      let location = window.location.href;
+      if(location.endsWith("details")){
+        window.history.back();
+      }
     }
-    this.page = page;
 
     // Close a non-persistent drawer when the page & route are changed.
     if (!this.$.drawer.persistent) {
@@ -199,9 +202,6 @@ class MyApp extends PolymerElement {
         break;
       case 'watchlist':
         import('./views/my-watchlist.js');
-        break;
-      case 'view404':
-        import('./views/my-view404.js');
         break;
       case 'account':
         import('./views/my-account.js');

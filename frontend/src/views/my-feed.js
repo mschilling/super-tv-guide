@@ -616,10 +616,13 @@ class myFeed extends PolymerElement {
       addbtn.classList.add("closed");
       window.history.pushState('forward', null, '/details')
     }else{
+      let location = window.location.href;
       container.classList.remove("open");
       backbtn.classList.remove("open");
       addbtn.classList.remove("closed");
-      window.history.back();
+      if(location.endsWith("details")){
+        window.history.back();
+      }
     }
   }
 
