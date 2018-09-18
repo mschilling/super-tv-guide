@@ -3,6 +3,7 @@ const admin = require('firebase-admin');
 const fs = require('fs');
 const readline = require('readline');
 const {google} = require('googleapis');
+const moment = require('moment');
 
 const SCOPES = ['https://www.googleapis.com/auth/calendar'];
 const TOKEN_PATH = './token.json';
@@ -16,21 +17,13 @@ export class CalendarManager {
         return new Promise( async (resolve, reject) => {
             fs.readFile('credentials.json', async (err, content) => {
                 if (err) {
-                    resolve({ error: 'Error loading client secret file:' });
+                    resolve({ status: 403 });
                 }
     
                 // Authorize a client with credentials, then call the Google Calendar API.
                 resolve(await this.authorize(JSON.parse(content), this.addEvent, episodeid, token));
-                // resolve({ token: token});
             });
         });
-        
-        
-
-        // return new Promise( async (resolve, reject) => {
-        //     // Authorize a client with credentials, then call the Google Calendar API.
-        //     resolve({ test: 'test' });
-        // })
     }
 
     private async authorize(credentials, callback, episodeid, _token) {
@@ -44,14 +37,14 @@ export class CalendarManager {
                 return;
             }
 
-            oAuth2Client.getToken(_token, (err, token) => {
+            oAuth2Client.getToken(_token, async (err, token) => {
                 if (err) {
-                    resolve({ error: 'Error retrieving access token'});
+                    resolve({ status: 401 }); // Invalid token
                     return;
                 }
                 oAuth2Client.setCredentials(token);
-            }); 
-            resolve(await callback(oAuth2Client, episodeid));           
+                resolve(await callback(oAuth2Client, episodeid));
+            });       
         });
       }
 
@@ -62,31 +55,11 @@ export class CalendarManager {
         });
 
         return new Promise((resolve, reject) => {
-            resolve( { auth: `${authUrl}` } )
+            resolve( {
+                status: 401,
+                link: `${authUrl}` 
+            } )
         });
-        // const rl = readline.createInterface({
-        //   input: process.stdin,
-        //   output: process.stdout,
-        // });
-        // rl.question('Enter the code from that page here: ', (code) => {
-        //   rl.close();
-        //   oAuth2Client.getToken(code, (err, token) => {
-        //     if (err) {
-        //         return console.error('Error retrieving access token', err);
-        //         return new Promise((resolve, reject) => {
-        //             resolve({ error: 'Error retrieving access token'});
-        //         })
-        //     }
-        //     oAuth2Client.setCredentials(token);
-        //     // Store the token to disk for later program executions
-        //     fs.writeFile(TOKEN_PATH, JSON.stringify(token), (error) => {
-        //       if (error) console.error(error);
-        //       console.log('Token stored to', TOKEN_PATH);
-        //     });
-            
-        //     callback(oAuth2Client, episodeid);
-        //   });
-        // });
       }
 
       private async addEvent(auth, episodeid) {
@@ -105,7 +78,7 @@ export class CalendarManager {
 
         if (!episode) {
             return new Promise((resolve, reject) => {
-                resolve({ error: 'Invalid episodeid' })
+                resolve({ status: 400 }) // Invalid episode
             })
         }
 
@@ -126,17 +99,23 @@ export class CalendarManager {
         }
 
         episodeDescription += `ID: ${episode.episodeid}\n\n`;
+
+        const airTime = serie.airtime.replace(' ', '');
+        const timeMoment = moment(airTime, 'HH:mm').add(serie.runtime, 'm');
+        const finTime = timeMoment.format('HH:mm');
         
         const event = {
             summary: serie.name,
             description: episodeDescription,
             start: {
-                dateTime: `${episode.episodereleasedate}T${serie.airtime.replace(' ', '')}:00.000Z`
+                dateTime: `${episode.episodereleasedate}T${airTime}:00.000Z`
             },
             end: {
-                dateTime: `${episode.episodereleasedate}T${serie.airtime.replace(' ', '')}:00.000Z`
+                dateTime: `${episode.episodereleasedate}T${finTime}:00.000Z`
             }
         }
+
+        console.log(event);
 
         return new Promise((resolve, reject) => {
             calendar.events.insert({
@@ -145,33 +124,13 @@ export class CalendarManager {
                 resource: event,
             }, (err, _event) => {
                 if (err) {
-                    console.log(err); // 'There was an error contacting the Calendar service: ' + 
-                    resolve({ error: 'Could not create event. ' });
+                    resolve({ status: 409 });
+                    return;
                 }
                 
-                resolve({ status: 'Event got created' });
+                resolve({ status: 200 });
             });
         });
-
-        // calendar.events.list({
-        //   calendarId: 'primary',
-        //   timeMin: (new Date()).toISOString(),
-        //   maxResults: 10,
-        //   singleEvents: true,
-        //   orderBy: 'startTime',
-        // }, (err, res) => {
-        //   if (err) return console.log('The API returned an error: ' + err);
-        //   const events = res.data.items;
-        //   if (events.length) {
-        //     console.log('Upcoming 10 events:');
-        //     events.map((event, i) => {
-        //       const start = event.start.dateTime || event.start.date;
-        //       console.log(`${start} - ${event.summary}`);
-        //     });
-        //   } else {
-        //     console.log('No upcoming events found.');
-        //   }
-        // });
       }
 }
 
