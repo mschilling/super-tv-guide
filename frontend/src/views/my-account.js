@@ -72,7 +72,7 @@ class MyAccount extends PolymerElement {
     `;
   }
 
-  constructor(){
+  constructor() {
     super();
     this.addLoading();
   }
@@ -85,16 +85,16 @@ class MyAccount extends PolymerElement {
     };
   }
 
-  addLoading(){
+  addLoading() {
     document.querySelectorAll('my-app')[0].shadowRoot.getElementById("loader").classList.add('anim');
   }
 
-  loadingDone(){ 
+  loadingDone() {
     let loader = document.querySelectorAll('my-app')[0].shadowRoot.getElementById("loader");
-    loader.addEventListener('animationiteration', function(){
+    loader.addEventListener('animationiteration', function () {
       loader.classList.remove('anim');
     })
-    loader.addEventListener('webkitAnimationIteration', function(){
+    loader.addEventListener('webkitAnimationIteration', function () {
       loader.classList.remove('anim');
     })
   }
@@ -109,10 +109,10 @@ class MyAccount extends PolymerElement {
     });
   }
 
-  _signOut(){
-    firebase.auth().signOut().then(function() {
+  _signOut() {
+    firebase.auth().signOut().then(function () {
       // Sign-out successful.
-    }).catch(function(error) {
+    }).catch(function (error) {
       // An error happened.
     });
   }
