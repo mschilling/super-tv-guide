@@ -1,12 +1,10 @@
 
 const admin = require('firebase-admin');
 const fs = require('fs');
-const readline = require('readline');
 const {google} = require('googleapis');
 const moment = require('moment');
 
 const SCOPES = ['https://www.googleapis.com/auth/calendar'];
-const TOKEN_PATH = './token.json';
 
 const db = admin.firestore();
 
@@ -39,7 +37,7 @@ export class CalendarManager {
 
             oAuth2Client.getToken(_token, async (err, token) => {
                 if (err) {
-                    resolve({ status: 401 }); // Invalid token
+                    resolve(await this.getAccessToken(oAuth2Client, callback, episodeid)); // Invalid token
                     return;
                 }
                 oAuth2Client.setCredentials(token);

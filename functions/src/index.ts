@@ -48,7 +48,6 @@ router.get('/calendar/add/:episodeid', async (req, res) => {
 router.post('/calendar/add/:episodeid', async (req, res) => {
     const episodeid = req.params.episodeid;
     const token = req.body;
-    console.log(token);
     res.json(await cm.addToCalendar(episodeid, token));
 });
 
