@@ -374,14 +374,14 @@ class myFeed extends PolymerElement {
   showDetails(e) {
     let myFeed = document.querySelectorAll('my-app')[0].shadowRoot.querySelectorAll('my-feed')[0].shadowRoot;
     let card = e.currentTarget;
-    if(card.classList.contains('open')){
+    if (card.classList.contains('open')) {
       let cards = myFeed.querySelectorAll('.card');
-      cards.forEach(function(i) {
+      cards.forEach(function (i) {
         i.classList.remove('open');
       });
-    }else{
+    } else {
       let cards = myFeed.querySelectorAll('.card');
-      cards.forEach(function(i) {
+      cards.forEach(function (i) {
         i.classList.remove('open');
       });
       card.classList.add('open');

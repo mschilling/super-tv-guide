@@ -12,14 +12,14 @@ import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 
 import '../style/shared-styles.js';
 
-import {Icon} from "@material/mwc-icon";
+import { Icon } from "@material/mwc-icon";
 
 import '@polymer/paper-toast/paper-toast.js';
 import '@polymer/paper-button/paper-button.js';
 
 class MyWatchlist extends PolymerElement {
-  static get template() {
-    return html`
+    static get template() {
+        return html`
       <style include="shared-styles">
         :host {
           display: block;
@@ -154,118 +154,134 @@ class MyWatchlist extends PolymerElement {
         }
       </style></custom-style>
     `;
-  }
-  constructor(){
-    super();
-    this.loadFromNetwork();
-  }
-
-  static get properties() {
-    return {
-      shows: {
-        type: Array,
-        value() {
-          return [];
-        }
-      },
-      user: {
-          type: Object,
-          value() {
-              return null;
-          }
-      }
     }
-}
-
-  getUser(){
-    if(this.user){
-        return this.user;
+    constructor() {
+        super();
+        this.addLoading();
+        this.loadFromNetwork();
     }
-    return new Promise(resolve => {
-      firebase.auth().onAuthStateChanged((currentUser) => {
-        if (currentUser) {
-            this.user = currentUser;
-            resolve(currentUser);
+
+    addLoading() {
+        document.querySelectorAll('my-app')[0].shadowRoot.getElementById("loader").classList.add('anim');
+    }
+
+    static get properties() {
+        return {
+            shows: {
+                type: Array,
+                value() {
+                    return [];
+                }
+            },
+            user: {
+                type: Object,
+                value() {
+                    return null;
+                }
+            }
         }
-      })
-    })
-  }
+    }
 
-  async loadFromNetwork(){
-    this.getPopularShows().then(shows => {
-        this.shows = shows;
-    })
-  }
-
-  getPopularShows() {
-    var request = `https://us-central1-super-tv-guide.cloudfunctions.net/api/api/popular`;
-    return fetch(request).then(response => {
-      if (!response.ok) {
-        this.toast('no-popular')
-      }
-      return response.json();
-    });
-    
-  }
-
-  async _addSerie(){
-    let user = await this.getUser();
-    let serie = this.shadowRoot.getElementById("serieid").value;
-    if(!serie){
-        this.toast('empty');
-    }else{
-        this.addSerie(user, serie).then(response => {
-            this.giveResponse(response);
+    loadingDone() {
+        let loader = document.querySelectorAll('my-app')[0].shadowRoot.getElementById("loader");
+        loader.addEventListener('animationiteration', function () {
+            loader.classList.remove('anim');
+        })
+        loader.addEventListener('webkitAnimationIteration', function () {
+            loader.classList.remove('anim');
         })
     }
-  }
 
-  addSerie(user, serie){
-    var request = `https://us-central1-super-tv-guide.cloudfunctions.net/api/api/user/${user.uid}/add/${serie}`;
-    
-    return fetch(request).then(response => {
-        if (!response.ok) {
-            this.toast('something-wrong');
+    getUser() {
+        if (this.user) {
+            return this.user;
         }
-        return response.json();
-    });
-  }
-
-  async _addSerieWithId(e){
-    let serie = e.model.item.id;
-    let user = await this.getUser();
-    if(!serie){
-        this.toast('empty');
-    }else{
-        this.addSerie(user, serie).then(response => {
-            this.giveResponse(response);
+        return new Promise(resolve => {
+            firebase.auth().onAuthStateChanged((currentUser) => {
+                if (currentUser) {
+                    this.user = currentUser;
+                    resolve(currentUser);
+                }
+            })
         })
     }
-  }
 
-  giveResponse(response){
-    switch (response.status) {
-        case 200:
-            // OK
-            this.toast('added');
-            break;
-        case 400:
-            // Serie ID is wrong
-            this.toast('incorrect-id');
-            break;
-        case 409:
-            // User already has serie
-            this.toast('already-added');
-            break;
-        default:
-            // Something else went wrong
-            this.toast('something-wrong'); 
+    async loadFromNetwork() {
+        this.getPopularShows().then(shows => {
+            this.shows = shows;
+            this.loadingDone();
+        })
     }
-  }
 
-  toast(item){
-    this.shadowRoot.getElementById(`toast-${item}`).open();
-  }
+    getPopularShows() {
+        var request = `https://us-central1-super-tv-guide.cloudfunctions.net/api/api/popular`;
+        return fetch(request).then(response => {
+            if (!response.ok) {
+                this.toast('no-popular')
+            }
+            return response.json();
+        });
+
+    }
+
+    async _addSerie() {
+        let user = await this.getUser();
+        let serie = this.shadowRoot.getElementById("serieid").value;
+        if (!serie) {
+            this.toast('empty');
+        } else {
+            this.addSerie(user, serie).then(response => {
+                this.giveResponse(response);
+            })
+        }
+    }
+
+    addSerie(user, serie) {
+        var request = `https://us-central1-super-tv-guide.cloudfunctions.net/api/api/user/${user.uid}/add/${serie}`;
+
+        return fetch(request).then(response => {
+            if (!response.ok) {
+                this.toast('something-wrong');
+            }
+            return response.json();
+        });
+    }
+
+    async _addSerieWithId(e) {
+        let serie = e.model.item.id;
+        let user = await this.getUser();
+        if (!serie) {
+            this.toast('empty');
+        } else {
+            this.addSerie(user, serie).then(response => {
+                this.giveResponse(response);
+            })
+        }
+    }
+
+    giveResponse(response) {
+        switch (response.status) {
+            case 200:
+                // OK
+                this.toast('added');
+                break;
+            case 400:
+                // Serie ID is wrong
+                this.toast('incorrect-id');
+                break;
+            case 409:
+                // User already has serie
+                this.toast('already-added');
+                break;
+            default:
+                // Something else went wrong
+                this.toast('something-wrong');
+        }
+    }
+
+    toast(item) {
+        this.shadowRoot.getElementById(`toast-${item}`).open();
+    }
 
 }
 

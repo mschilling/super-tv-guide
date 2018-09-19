@@ -112,7 +112,7 @@ class MyLogin extends PolymerElement {
     });
   }
 
-  _login(){
+  _login() {
     var provider = new firebase.auth.GoogleAuthProvider();
     firebase.auth().signInWithRedirect(provider);
   }
