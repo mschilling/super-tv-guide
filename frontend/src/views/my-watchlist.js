@@ -98,7 +98,7 @@ class MyWatchlist extends PolymerElement {
         <div class="spacer"></div>
         <div class="card">
             <h2>Add watchlist item</h2>
-            <p>Search on <a href="www.thetvdb.com">TVDB</a> for the serie ID, and enter it below. Or choose one of the most popular series below.</p>
+            <p>Search on <a target="_blank" href="https://www.thetvdb.com">TVDB</a> for the serie ID, and enter it below. Or choose one of the most popular series below.</p>
             <form id="form" action="?">
                <div class="form-group">
                 <input id="serieid" type="text" name="serieid" placeholder="Serie ID">
