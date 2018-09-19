@@ -26,143 +26,125 @@ export class FirestoreManager {
 
     public async addSerieToUser(_userid: string, _serieid: string)  {
 
+        let userSeries: Array<string> = [];
+
         axios.defaults.baseURL = 'https://api.thetvdb.com/';
         await this.authenticate();
 
-        let legitSerie;
-        await axios.get(`/series/${_serieid}`)
-            .then(result => {
-                legitSerie = true;
-            })
-            .catch(err => {
-                legitSerie = false;
-            });
-        if (!legitSerie) {
-            return new Promise((resolve, reject) => {
+        // Check if the serieid is legit
+        try {
+            await axios.get(`/series/${_serieid}`);
+        } catch (error) {
+            return new Promise((resolve) => {
                 resolve({ status: 400 });
             })
         }
         
-        let userSeries: Array<string>;
+        // Check if the user already has any series
+        try {
+            const doc = await db.collection('USERS').doc(_userid).get();
+            if (doc.exists) {
+                userSeries = doc.data().series;
+            }
+        } catch (error) {
+            console.log(error);
+        }
 
-        // Check if the user already has series.
-        await db.collection('USERS').doc(_userid).get()
-            .then(doc => {
-                if (doc.exists) {
-                    userSeries = doc.data().series;
-                }
+        // Check if the user already has the serie
+        if (userSeries.indexOf(_serieid) > -1) {
+            return new Promise(resolve => {
+                resolve({ status: 409 })
             })
-            .catch(err => {
-                console.log(err);
-            });
-
-        if (userSeries === undefined) {
-            userSeries = [];
         }
 
-        let status;
-
-        // If the user doesnt have the serie add it.
-        if (userSeries.indexOf(_serieid) === -1) {
+        try {
             userSeries.push(_serieid);
-            this.addSerieToDatabase(_serieid)
-                .catch(err => {
-                    console.log(err);
-                });
-            status = { status: 200 };
-        }
-        else {
-            status = { status: 409 };
-        }
+            this.addSerieToDatabase(_serieid).catch(error => { console.log(error) });
+        } catch (error) {
+            console.log(error);
+        }        
         
         // Add the series to the user.
         await db.collection('USERS').doc(_userid).set({
             series: userSeries
         });
 
-        return new Promise((resolve, reject) => {
-            resolve(status);
+        return new Promise((resolve) => {
+            resolve({ status: 200 });
         })
     }
 
     private async addSerieToDatabase(_serieid) {
 
         // Check if the serie is already in firestore, if not add it.
-        db.collection('SERIES').doc(_serieid + '').get()
-            .then(async doc => {
-                if (!doc.exists) {
-                    await axios.get(`/series/${_serieid}`)
-                        .then(result => {
-                            db.collection('SERIES').doc(_serieid).set({
-                                id: result['data']['data'].id,
-                                name: result['data']['data'].seriesName,
-                                airtime: this.convertTo24Hour(result['data']['data'].airsTime),
-                                runtime: result['data']['data'].runtime,
-                                subscribers: 1
-                            });
-                        })
-                        .catch(err => {
-                            console.log(err);
-                        });
-                    this.addSerieEpisodesToDatabase(_serieid, 1)
-                    .catch(err => {
-                        console.log(err);
-                    });
-                }
-                else {
-                    const data = doc.data();
-                    db.collection('SERIES').doc(data.id + '').set({
-                        id: data.id,
-                        name: data.name,
-                        airtime: data.airtime,
-                        runtime: data.runtime,
-                        subscribers: data.subscribers + 1
-                    });
-                }
-            })
-            .catch(err => {
-                console.log(err);
-            })
+        try {
+
+            const doc = await db.collection('SERIES').doc(_serieid.toString()).get();
+            if (doc.exists) {
+                const data = doc.data();
+                db.collection('SERIES').doc(_serieid.toString()).update({
+                    subscribers: data.subscribers + 1
+                });
+            }
+
+            else {
+
+                const response = await axios.get(`/series/${_serieid}`);
+                const { data } = await response;
+
+                db.collection('SERIES').doc(_serieid).set({
+                    id: data['data'].id,
+                    name: data['data'].seriesName,
+                    airtime: this.convertTo24Hour(data['data'].airsTime),
+                    runtime: data['data'].runtime,
+                    subscribers: 1
+                });
+
+                this.addSerieEpisodesToDatabase(_serieid, 1).catch(error => { console.log(error) });
+
+            }
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     private async addSerieEpisodesToDatabase(_serieid, page) {
-        
-        axios.get(`/series/${_serieid}/episodes/query?page=${page}`)
-            .then(result => {
-                const episodes = result['data']['data'];
-                const links = result['data']['links'];
-                episodes.forEach(episode => {
-                    if (moment(episode.firstAired) > moment()) {
-                        db.collection('EPISODES').doc(episode.id + '').set({
-                            episodeid: episode.id,
-                            serieid: _serieid,
-                            episodenumber: episode.airedEpisodeNumber,
-                            seasonnumber: episode.airedSeason,
-                            episodename: episode.episodeName,
-                            episodedescription: episode.overview,
-                            episodereleasedate: episode.firstAired
-                        });
-                    }
-                });
-                if (links.next !== null) {
-                    if (links.last > 5 && page === 1) {
-                        this.addSerieEpisodesToDatabase(_serieid, links.last - 5)
-                        .catch(err => {
-                            console.log(err);
-                        });
-                    }
-                    else {
-                        this.addSerieEpisodesToDatabase(_serieid, links.next)
-                        .catch(err => {
-                            console.log(err);
-                        });
-                    }
-                    
+
+        try {
+
+            const response = axios.get(`/series/${_serieid}/episodes/query?page=${page}`);
+            const { data } = await response;
+            const episodes = data['data'];
+            const links = data['links'];
+
+            if (links.next) {
+                
+                if (links.last > 5 && page === 1) {
+                    this.addSerieEpisodesToDatabase(_serieid, links.last - 5).catch(error => { console.log(error) });
                 }
-            })
-            .catch(err => {
-                console.log(err);
+                else {
+                    this.addSerieEpisodesToDatabase(_serieid, links.next).catch(error => { console.log(error) });
+                }
+
+            }
+
+            episodes.forEach(episode => {
+                if (moment(episode.firstAired) > moment()) {
+                    db.collection('EPISODES').doc(episode.id + '').set({
+                        episodeid: episode.id,
+                        serieid: _serieid,
+                        episodenumber: episode.airedEpisodeNumber,
+                        seasonnumber: episode.airedSeason,
+                        episodename: episode.episodeName,
+                        episodedescription: episode.overview,
+                        episodereleasedate: episode.firstAired
+                    });
+                }
             });
+
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     public async getUserFeed(_userid) {
@@ -170,58 +152,63 @@ export class FirestoreManager {
         let userSeries;
         const userEpisodes = [];
 
-        await db.collection('USERS').doc(_userid).get()
-            .then(doc => {
-                if (doc.exists) {
-                    userSeries = doc.data().series;
-                }
-            })
-            .catch(err => {
-                console.log(err);
-            });
-
-        if (!userSeries) {
-            return new Promise((resolve, reject) => {
-                resolve({ status: '404-1' });
-            })
+        try {
+            const doc = await db.collection('USERS').doc(_userid).get();
+            if (!doc.exists) {
+                return new Promise((resolve) => {
+                    resolve({ status: '404-1' });
+                });
+            }
+            userSeries = doc.data().series;
+        } catch (error) {
+            console.log(error);
         }
 
-        for (const serieid of userSeries) {
-            let serie;
-            
-            await db.collection('SERIES').doc(serieid + '').get()
-                .then(doc => {
-                    serie = doc.data();
-                })
-                .catch(error => {
-                    console.log(error);
+        try {
+
+            for (const serieid of userSeries) {
+                    
+                const serieDoc = await db.collection('SERIES').doc(serieid + '').get();
+                const serie = serieDoc.data();
+
+                // Retrieve all episodes of the users serie that aired between now and 14 days
+                const episodeSnapshot = await db.collection('EPISODES')
+                    .where('serieid', '==', +serieid)
+                    .where('episodereleasedate', '>', moment().format('YYYY-MM-DD'))
+                    .where('episodereleasedate', '<', moment().add(14, 'd').format('YYYY-MM-DD'))
+                    .get();
+
+                episodeSnapshot.forEach(episodeDoc => {
+
+                    const episode = episodeDoc.data();
+                    userEpisodes.push({
+                        serieid: serie.id,
+                        seriename: serie.name,
+                        seasonnumber: episode.seasonnumber,
+                        episodenumber: episode.episodenumber,
+                        episodename: episode.episodename,
+                        episodedescription: episode.episodedescription,
+                        episodereleasedate: episode.episodereleasedate,
+                        episodereleasetime: serie.airtime
+                    });  
                 });
 
-            const today = moment();
-            await db.collection('EPISODES').where('serieid', '==', serieid).where('episodereleasedate', '>', today.format('YYYY-MM-DD')).where('episodereleasedate', '<', today.add(14, 'd').format('YYYY-MM-DD')).get()
-                .then(snapshot => {
-                    snapshot.forEach((doc) => {
-                        const episode = doc.data();
-                        userEpisodes.push({
-                            serieid: serie.id,
-                            seriename: serie.name,
-                            seasonnumber: episode.seasonnumber,
-                            episodenumber: episode.episodenumber,
-                            episodename: episode.episodename,
-                            episodedescription: episode.episodedescription,
-                            episodereleasedate: episode.episodereleasedate,
-                            episodereleasetime: serie.airtime
-                        });                       
-                    });
-                })
-                .catch(error => {
-                    console.log(error);
-                })
-        };
+                userEpisodes.sort(compare);
+            }
+        } catch (error) {
+            console.log(error);
+        }
 
-        userEpisodes.sort(compare);
-        const firstFifteen = userEpisodes.slice(0, 15);
-        
+        return new Promise((resolve) => {
+
+            if (userEpisodes.length <= 0) {
+                resolve({ status: '404-2'});
+                return;
+            }
+
+            resolve(userEpisodes.slice(0, 15));
+        });
+
         function compare(a,b) {
 
             if (a.episodereleasedate.split('-').join() === b.episodereleasedate.split('-').join()) {
@@ -239,30 +226,29 @@ export class FirestoreManager {
                 return 1;
             return 0;
         }
-
-        return new Promise((resolve, reject) => {
-            if (firstFifteen.length <= 0) {
-                resolve({ status: '404-2'});
-                return;
-            }
-
-            resolve(firstFifteen);
-        })
     }
 
     public async getPopularSeries() {
-        const popularSeries = [];
-        await db.collection('SERIES').orderBy('subscribers', 'desc').orderBy('name').limit(10).get()
-            .then(snapshot => {
-                snapshot.forEach(doc => {
-                    popularSeries.push(doc.data());
-                });
-            })
-            .catch(error => {
-                console.log(error);
-            });
 
-        return new Promise((resolve, reject) => {
+        const popularSeries = [];
+
+        try {
+
+            // Get the 10 most popular shows.
+            const snapshot = await db.collection('SERIES')
+                .orderBy('subscribers', 'desc')
+                .orderBy('name')
+                .limit(10)
+                .get();
+            
+            snapshot.forEach(doc => {
+                popularSeries.push(doc.data());
+            });
+        } catch (error) {
+            console.log(error);
+        }
+
+        return new Promise((resolve) => {
             resolve(popularSeries);
         });
     }
@@ -275,52 +261,55 @@ export class FirestoreManager {
         await self.authenticate();
 
         const series = [];
-
         const today = moment().utc();
         today.hours(0).minutes(0).seconds(0).milliseconds(0);
 
-        await db.collection('SERIES').get()
-            .then(snapshot => {
-                snapshot.forEach(doc => {
-                    series.push(doc.data().id);
-                });
-            })
-            .catch(error => {
-                console.log(error);
-            })
+        try {
+            const snapshot = await db.collection('SERIES').get();
+            snapshot.forEach(doc => {
+                series.push(doc.data().id);
+            });
+        } catch (error) {
+            console.log(error);
+        }
 
-        axios.get(`/updated/query?fromTime=${today.unix()}&toTime=${today.add(1, 'd').unix()}`)
-            .then(result => {
-                result['data']['data'].forEach(update => {
-                    if (series.indexOf(update.id) > -1) {
-                        self.addSerieEpisodesToDatabase(update.id, 1)
-                            .catch(error => {
-                                console.log(error);
-                            });
-                    }
-                });
-            })
-            .catch(error => {
-                console.log(error);
+        try {
+            const response = await axios.get(`/updated/query?fromTime=${today.unix()}&toTime=${today.add(1, 'd').unix()}`);
+            const { data } = await response;
+
+            data['data'].forEach(update => {
+                if (series.indexOf(update.id) > -1) {
+                    self.addSerieEpisodesToDatabase(update.id, 1)
+                        .catch(error => {
+                            console.log(error);
+                        });
+                }
             });
 
-        return new Promise((resolve, reject) => {
+        } catch (error) {
+            console.log(error);
+        }
+
+        return new Promise((resolve) => {
             resolve();
         })
     }
 
     private async authenticate() {
-        return new Promise((resolve, reject) => {
-            axios.post(`/login`, {
-                "apikey": this.apikey
-            }).then((response) => {
-                axios.defaults.headers.common['Authorization'] = `Bearer ${response['data'].token}`;
+
+        return new Promise( async (resolve, reject) => {
+            try {
+
+                const response = await axios.post(`/login`, { "apikey": this.apikey });
+                const { data } = await response;
+                axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
                 resolve();
-            }).catch((error) => {
+
+            } catch (error) {
                 console.log(error);
                 reject();
-            });
-        });
+            }
+        })
     }
 
     private convertTo24Hour(_time): string {
