@@ -6,12 +6,17 @@ const admin = require('firebase-admin');
 admin.initializeApp(functions.config().firebase);
 
 import { FirestoreManager } from './FirestoreManager';
+import { CalendarManager } from './CalendarManager';
 import { feed } from './testfeed';
 
 const app = express();
 const router = express.Router();
 
+const bodyParser = require('body-parser');
+app.use(bodyParser.json());
+
 const fm = new FirestoreManager();
+const cm = new CalendarManager();
 
 // Automatically allow cross-origin requests
 app.use(cors({ origin: true }));
@@ -33,6 +38,17 @@ router.get('/user/:userid/feed', async (req, res) => {
 
 router.get('/popular', async (req, res) => {
     res.json(await fm.getPopularSeries());
+});
+
+router.get('/calendar/add/:episodeid', async (req, res) => {
+    const episodeid = req.params.episodeid;
+    res.json(await cm.addToCalendar(episodeid, null));
+});
+
+router.post('/calendar/add/:episodeid', async (req, res) => {
+    const episodeid = req.params.episodeid;
+    const token = req.body;
+    res.json(await cm.addToCalendar(episodeid, token));
 });
 
 app.use('/api', router);
