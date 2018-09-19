@@ -12,6 +12,9 @@ import { feed } from './testfeed';
 const app = express();
 const router = express.Router();
 
+const bodyParser = require('body-parser');
+app.use(bodyParser.json());
+
 const fm = new FirestoreManager();
 const cm = new CalendarManager();
 
@@ -37,12 +40,15 @@ router.get('/popular', async (req, res) => {
     res.json(await fm.getPopularSeries());
 });
 
-router.get('/calendar/add/:episodeid/:token?', async (req, res) => {
+router.get('/calendar/add/:episodeid', async (req, res) => {
     const episodeid = req.params.episodeid;
-    let token;
-    if (req.params.token) {
-        token = req.params.token.replace('.', '/')
-    }
+    res.json(await cm.addToCalendar(episodeid, null));
+});
+
+router.post('/calendar/add/:episodeid', async (req, res) => {
+    const episodeid = req.params.episodeid;
+    const token = req.body;
+    console.log(token);
     res.json(await cm.addToCalendar(episodeid, token));
 });
 
