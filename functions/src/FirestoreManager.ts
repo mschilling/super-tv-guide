@@ -11,11 +11,14 @@ db.settings({ timestampsInSnapshots: true });
 
 const fileLocation = './tvdb.json';
 
+let self;
+
 export class FirestoreManager {
 
     apikey: string;
 
     constructor() {
+        self = this;
         const file = JSON.parse(fs.readFileSync(fileLocation, 'utf8'));
         this.apikey = file.apikey;
         schedule.scheduleJob('0 0 * * *', this.update); // Schedule a update every day 00:00
@@ -269,7 +272,7 @@ export class FirestoreManager {
         console.log('Updating series...');
 
         axios.defaults.baseURL = 'https://api.thetvdb.com/';
-        await this.authenticate();
+        await self.authenticate();
 
         const series = [];
 
@@ -290,7 +293,7 @@ export class FirestoreManager {
             .then(result => {
                 result['data']['data'].forEach(update => {
                     if (series.indexOf(update.id) > -1) {
-                        this.addSerieEpisodesToDatabase(update.id, 1)
+                        self.addSerieEpisodesToDatabase(update.id, 1)
                             .catch(error => {
                                 console.log(error);
                             });
