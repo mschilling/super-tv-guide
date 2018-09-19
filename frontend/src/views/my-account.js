@@ -10,30 +10,6 @@ class MyAccount extends PolymerElement {
         :host {
           display: block;
         }
-        #loader {
-          position: absolute;
-          top: 64px;
-          width: 100%;
-          height: 6px;
-          background-color: #eeeeee;
-        }
-        #loader::before {
-          content: "";
-          display: inline;
-          position: absolute;
-          width: 50%;
-          left: -50%;
-          height: 100%;
-          text-align: center;
-          background-color: #d03838;
-        }
-        #loader.anim::before{
-          animation: loading 1s linear infinite;
-        }
-        @keyframes loading {
-            from {left: -50%;}
-            to {left: 100%;}
-        }
         .button{
           --mdc-theme-on-primary: white;
           --mdc-theme-primary: #B71C1C;
@@ -68,8 +44,6 @@ class MyAccount extends PolymerElement {
           height: 15px;
       }
       </style>
-
-      <div id="loader" class="anim"></div>
   
       <div class="spacer"></div>
 
@@ -100,6 +74,7 @@ class MyAccount extends PolymerElement {
 
   constructor(){
     super();
+    this.addLoading();
   }
 
   static get properties() {
@@ -110,8 +85,12 @@ class MyAccount extends PolymerElement {
     };
   }
 
+  addLoading(){
+    document.querySelectorAll('my-app')[0].shadowRoot.getElementById("loader").classList.add('anim');
+  }
+
   loadingDone(){ 
-    let loader = this.shadowRoot.getElementById("loader");
+    let loader = document.querySelectorAll('my-app')[0].shadowRoot.getElementById("loader");
     loader.addEventListener('animationiteration', function(){
       loader.classList.remove('anim');
     })

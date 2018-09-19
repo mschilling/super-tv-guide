@@ -86,6 +86,55 @@ class MyApp extends PolymerElement {
           color: white;
         }
 
+        iron-pages {
+          width: 600px;
+          max-width: 100%;
+          min-height: 500px;
+        }
+        #flex-container{
+          float: left;
+          width: 100%;
+          display: flex;
+          justify-content: center;
+        }
+        .page{
+          float: left;
+          width: 100%;
+          position: relative;
+          overflow: hidden;
+        }
+
+        #loader{
+          position: absolute;
+          top: 64px;
+          width: 100%;
+          height: 6px;
+          background-color: #eeeeee;
+          overflow-x: hidden;
+        }
+        #loader-inner {
+          float: left;
+          width: 100%;
+          height: 100%;
+        }
+        #loader-inner::before {
+          content: "";
+          display: inline;
+          position: absolute;
+          width: 50%;
+          left: -50%;
+          height: 100%;
+          text-align: center;
+          background-color: #d03838;
+        }
+        #loader.anim > #loader-inner::before{
+          animation: loading 1s linear infinite;
+        }
+        @keyframes loading {
+            from {left: -50%;}
+            to {left: 100%;}
+        }
+
       </style>
 
       <app-location route="{{route}}" url-space-regex="^[[rootPath]]">
@@ -94,7 +143,7 @@ class MyApp extends PolymerElement {
       <app-route route="{{route}}" pattern="[[rootPath]]:page" data="{{routeData}}" tail="{{subroute}}">
       </app-route>
 
-      <app-drawer-layout fullbleed="" narrow="{{narrow}}">
+      <app-drawer-layout fullbleed="" force-narrow narrow="{{narrow}}">
         <!-- Drawer content -->
         <app-drawer id="drawer" slot="drawer" swipe-open="[[narrow]]">
           <app-toolbar>Menu</app-toolbar>
@@ -114,13 +163,19 @@ class MyApp extends PolymerElement {
             </app-toolbar>
           </app-header>
 
-          <iron-pages selected="[[page]]" attr-for-selected="name" role="main">
-            <my-feed name="feed"></my-feed>
-            <my-watchlist name="watchlist"></my-watchlist>
-            <my-login name="login"></my-login>
-            <my-account name="account"></my-account>
-            <my-view404 name="view404"></my-view404>
-          </iron-pages>
+          <div id="loader" class="anim">
+            <div id="loader-inner"></div>
+          </div>
+
+          <div id='flex-container'>
+            <iron-pages selected="[[page]]" attr-for-selected="name" role="main">
+                <my-feed class="page" name="feed"></my-feed>
+                <my-watchlist class="page" name="watchlist"></my-watchlist>
+                <my-login class="page" name="login"></my-login>
+                <my-account class="page" name="account"></my-account>
+                <my-view404 class="page" name="view404"></my-view404>
+            </iron-pages>
+          </div>
 
         </app-header-layout>
       </app-drawer-layout>
@@ -179,10 +234,6 @@ class MyApp extends PolymerElement {
     break;
     default:
       this.page = 'feed';
-      let location = window.location.href;
-      if(location.endsWith("details")){
-        window.history.back();
-      }
     }
 
     // Close a non-persistent drawer when the page & route are changed.
