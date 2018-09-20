@@ -65,6 +65,19 @@ class myFeed extends PolymerElement {
     };
   }
 
+  connectedCallback() {
+    super.connectedCallback();
+    firebase.auth().getRedirectResult().then(function (result) {
+      if (result.credential) {
+        // This gives you a Google Access Token. You can use it to access the Google API.
+        let token = result.credential.accessToken;
+        localStorage.setItem('access_token', token);
+      }
+    }).catch(function (error) {
+      console.log('Error getting access_token');
+    });
+  }
+
   /* 
   *  Make sure network content is loaded first,
   *  If network is not available: load local content.

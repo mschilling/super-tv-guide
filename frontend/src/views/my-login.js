@@ -100,20 +100,27 @@ class MyLogin extends PolymerElement {
     `;
   }
 
+  constructor(){
+    super();
+    this.logginIn = false; // Needed for loading animation
+  }
+
   connectedCallback() {
     super.connectedCallback();
-
+    // Check if user is logged in,
+    // if he is then redirect to feed.
     firebase.auth().onAuthStateChanged((currentUser) => {
       if (currentUser) {
-        console.log("ingelogd!");
-      } else {
-        console.log("niet ingelogd");
+        window.location.href="feed";
+        this.loggingIn = false;
       }
     });
   }
 
   _login() {
-    var provider = new firebase.auth.GoogleAuthProvider();
+    this.loggingIn = true;
+    let provider = new firebase.auth.GoogleAuthProvider();
+    provider.addScope('https://www.googleapis.com/auth/calendar'); // Ask permission for Google Calendar
     firebase.auth().signInWithRedirect(provider);
   }
 

@@ -261,6 +261,7 @@ class MyApp extends PolymerElement {
         import('./views/my-login.js');
       break;
     }
+    window.history.pushState('forward', null, `/${this.page}`);
   }
 }
 
