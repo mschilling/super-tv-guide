@@ -110,12 +110,23 @@ p {
     opacity: 1;
     transition: font-size 200ms 0ms ease-in, opacity 200ms 200ms ease-in;
 }
+.card.open > .description .add-calendar mwc-icon{
+    font-size: 13pt !important;
+    opacity: 1;
+    transition: font-size 200ms 0ms ease-in, opacity 200ms 200ms ease-in;
+}
 .card.open > .description > .episode-title{
     margin-bottom: 10px;
     margin-top: 20px;
     transition: font-size 200ms 0ms ease-in, opacity 200ms 200ms ease-in, margin 200ms 0ms ease-in;
 }
-
+.card.open > .description > .add-calendar{
+    margin-bottom: 10px;
+    margin-top: 20px;
+    padding: 10px;
+    height: 20px;
+    transition: font-size 200ms 0ms ease-in, height 200ms 0ms ease-in, opacity 200ms 200ms ease-in, margin 200ms 0ms ease-in, padding 200ms 0ms ease-in;
+}
 .header-img {
     transition: all 400ms ease-in-out;
     height: 0;
@@ -145,13 +156,38 @@ p {
     transition: font-size 200ms 200ms ease-in, opacity 200ms 0ms ease-in;
     will-change: font-size, opacity;
 }
+.description .add-calendar mwc-icon{
+    font-size: 0 !important;
+    opacity: 0;
+    color: #5e5e5e;
+    transition: font-size 200ms 200ms ease-in, opacity 200ms 0ms ease-in;
+    will-change: font-size, opacity;
+    float: left;
+}
 
-.card > .description >.episode-title {
+.card > .description > .episode-title {
     color: #1e1e1e;
     font-weight: 600;
     margin: inherit;
     transition: font-size 200ms 200ms ease-in, opacity 200ms 0ms ease-in, margin 200ms 200ms ease-in;
     will-change: font-size, opacity, margin;
+}
+.card > .description > .add-calendar {
+    width: calc(100% - 20px);
+    float: left;
+    color: #828282;
+    background-color: #eeeeee;
+    margin: inherit;
+    height: 0;
+    padding: 0;
+    transition: font-size 200ms 200ms ease-in, height 200ms 200ms ease-in, opacity 200ms 0ms ease-in, margin 200ms 200ms ease-in, padding 200ms 200ms ease-in;
+    will-change: font-size, opacity, margin, padding;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+.card > .description > .add-calendar p{
+    float: left;
+    margin-top: -1px;
 }
 
 .basic-info {
