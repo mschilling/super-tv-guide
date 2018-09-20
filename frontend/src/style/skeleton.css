@@ -24,7 +24,7 @@
     --details-skeleton: linear-gradient(#f2f2f2 var(--details-height), transparent 0);
     }
 
-.card.feed-item{
+.card.feed-item.skeleton{
     height: var(--card-height);
 }
 .card:empty::after{

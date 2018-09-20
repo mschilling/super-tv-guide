@@ -286,12 +286,12 @@ class myFeed extends PolymerElement {
       <link rel="stylesheet" href="/src/style/feed-style.css">
 
       <template is="dom-if" if="{{!rendered}}">
-          <div id="cards-container">
-          <div class="card feed-item"></div>
-          <div class="card feed-item"></div>
-          <div class="card feed-item"></div>
-          <div class="card feed-item"></div>
-          <div class="card feed-item"></div>
+        <div id="cards-container">
+          <div class="card feed-item skeleton"></div>
+          <div class="card feed-item skeleton"></div>
+          <div class="card feed-item skeleton"></div>
+          <div class="card feed-item skeleton"></div>
+          <div class="card feed-item skeleton"></div>
         </div>
       </template>
 
