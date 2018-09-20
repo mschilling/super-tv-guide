@@ -51,9 +51,9 @@ class MyWatchlist extends PolymerElement {
         input{
             float: left;
             width: calc(100% - 67px);
-            padding: 7px;
-            padding-bottom: 6px;
-            padding-top: 8px;
+            padding-left: 10px;
+            padding-bottom: 11px;
+            padding-top: 13px;
             border: 1px solid #eeeeee;
             border-right: none;
             border-top-left-radius: 5px;
@@ -70,7 +70,7 @@ class MyWatchlist extends PolymerElement {
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 30px;
+            height: 40px;
             border-top-right-radius: 5px;
             border: 1px solid #eeeeee;
             border-bottom-right-radius: 5px;
@@ -79,20 +79,65 @@ class MyWatchlist extends PolymerElement {
             color: #757575;
         }
         .popular-item{
+            float: left;
+            width: 100%;
             color: #363636;
+            margin-bottom: 10px;
         }
         .popular-item p{
-            float: left
-            width: calc(100% - 30px);
+            margin: 0;
+            float: left;
+            width: calc(100% - 53px);
+            padding-left: 10px;
+            padding-bottom: 8px;
+            padding-top: 8px;
+            border: 1px solid #eeeeee;
+            border-left: none;
+            border-top-right-radius: 5px;
+            border-bottom-right-radius: 5px;
         }
         .popular-item a{
-            width: 30px;
+            width: 40px;
             float: left;
+            background-color: #eeeeee;
+            color: #828282;
+            float: left;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 40px;
+            border-top-left-radius: 5px;
+            border: 1px solid #eeeeee;
+            border-bottom-left-radius: 5px;
+            cursor: pointer;
+            background-position: center;
+            transition: background 0.8s;
+        }
+        .popular-item a:hover {
+            background: #cdcdcd radial-gradient(circle, transparent 1%, #cdcdcd 1%) center/15000%;
+        }
+        .popular-item a:active {
+            background-color: #afafaf;
+            background-size: 100%;
+            transition: background 0s;
         }
         .spacer{
             float: left;
             width: 100%;
             height: 15px;
+        }
+        .ripple {
+            cursor: pointer;
+            background-position: center;
+            transition: background 0.8s;
+          }
+        .ripple:hover {
+            background: #E53935 radial-gradient(circle, transparent 1%, #E53935 1%) center/15000%;
+        }
+        .ripple:active {
+            background-color: #C62828;
+            background-size: 100%;
+            transition: background 0s;
         }
       </style>
         <div class="spacer"></div>
@@ -102,7 +147,7 @@ class MyWatchlist extends PolymerElement {
             <form id="form" action="?">
                <div class="form-group">
                 <input id="serieid" type="text" name="serieid" placeholder="Serie ID">
-                <a on-click="_addSerie">
+                <a on-click="_addSerie" class="ripple">
                     <mwc-icon class="arrow_back" >add</mwc-icon>
                 </a>
                </div>
@@ -113,8 +158,8 @@ class MyWatchlist extends PolymerElement {
             <h2>Popular shows</h2>
             <p>Click on an item to add it to your feed.</p>
             <template is="dom-repeat" items="{{shows}}">
-                <div class="popular-item" on-click="_addSerieWithId">
-                <a><mwc-icon class="arrow_back" >add</mwc-icon></a>
+                <div class="popular-item">
+                <a on-click="_addSerieWithId"><mwc-icon class="arrow_back" >add</mwc-icon></a>
                 <p>[[item.name]]</p>
                 </div>
             </template>
@@ -227,6 +272,7 @@ class MyWatchlist extends PolymerElement {
     async _addSerie() {
         let user = await this.getUser();
         let serie = this.shadowRoot.getElementById("serieid").value;
+        this.shadowRoot.getElementById("serieid").value = "";
         if (!serie) {
             this.toast('empty');
         } else {
