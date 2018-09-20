@@ -158,7 +158,9 @@ class MyApp extends PolymerElement {
 
           <app-header slot="header" fixed condenses="" reveals="" effects="waterfall">
             <app-toolbar>
-              <paper-icon-button icon="my-icons:menu" drawer-toggle=""></paper-icon-button>
+              <template is="dom-if" if="[[!login]]">
+                <paper-icon-button icon="my-icons:menu" drawer-toggle=""></paper-icon-button>
+              </template>
               <div main-title="">Super TV Guide</div>
             </app-toolbar>
           </app-header>
@@ -249,15 +251,19 @@ class MyApp extends PolymerElement {
     // statement, so break it up.
     switch (page) {
       case 'feed':
+        this.login = false;
         import('./views/my-feed.js');
         break;
       case 'watchlist':
+      this.login = false;
         import('./views/my-watchlist.js');
         break;
       case 'account':
+        this.login = false;
         import('./views/my-account.js');
       break;
       case 'login':
+        this.login = true;
         import('./views/my-login.js');
       break;
     }
