@@ -327,6 +327,7 @@ class myFeed extends PolymerElement {
                   <div class="divider"></div>
                   <p class="episode-title">[[item.episodename]]</p>
                   <p>[[item.episodedescription]]</p>
+                  <a href="[[item.calendarlink]]" target="_blank" class="add-calendar"><mwc-icon>add</mwc-icon><p>Add to Google Calendar</p></a>
               </div>
 
             </div>
