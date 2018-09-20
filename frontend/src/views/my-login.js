@@ -16,7 +16,6 @@ class MyLogin extends PolymerElement {
       <style>
         :host {
           display: block;
-          padding: 10px 20px;
         }
         .google-button {
           height: 40px;
@@ -70,10 +69,12 @@ class MyLogin extends PolymerElement {
           justify-content: center;
           align-items: center;
           width: 100%;
-          height: calc(100vh - 100px);
+          height: calc(100vh - 64px);
           flex-wrap: wrap;
         }
-        #container-inner{
+        #container-inner > div{
+          float: left;
+          width: 100%;
           display: flex;
           justify-content: center;
           align-items: center;
@@ -85,7 +86,10 @@ class MyLogin extends PolymerElement {
       <div id="container">
 
         <div id="container-inner">
-          <img class="applogo" src="/images/logo.svg" alt="App Logo">
+          <div>
+            <img class="applogo" src="/images/logo.svg" alt="App Logo">
+          </div>
+          <div>
 
           <button type="button" class="google-button" on-click="_login">
             <span class="google-button__icon">
@@ -93,6 +97,8 @@ class MyLogin extends PolymerElement {
             </span>
             <span class="google-button__text">Sign in with Google</span>
           </button>
+
+          </div>
         </div>
 
       </div>
@@ -100,9 +106,13 @@ class MyLogin extends PolymerElement {
     `;
   }
 
-  constructor(){
+  constructor() {
     super();
-    this.logginIn = false; // Needed for loading animation
+    this.addLoading();
+  }
+
+  addLoading() {
+    document.querySelectorAll('my-app')[0].shadowRoot.getElementById("loader").classList.add('anim');
   }
 
   connectedCallback() {
@@ -111,14 +121,24 @@ class MyLogin extends PolymerElement {
     // if he is then redirect to feed.
     firebase.auth().onAuthStateChanged((currentUser) => {
       if (currentUser) {
+        this.loadingDone();
         window.location.href="feed";
-        this.loggingIn = false;
       }
+      this.loadingDone();
     });
   }
 
+  loadingDone() {
+    let loader = document.querySelectorAll('my-app')[0].shadowRoot.getElementById("loader");
+    loader.addEventListener('animationiteration', function () {
+      loader.classList.remove('anim');
+    })
+    loader.addEventListener('webkitAnimationIteration', function () {
+      loader.classList.remove('anim');
+    })
+  }
+
   _login() {
-    this.loggingIn = true;
     let provider = new firebase.auth.GoogleAuthProvider();
     provider.addScope('https://www.googleapis.com/auth/calendar'); // Ask permission for Google Calendar
     firebase.auth().signInWithRedirect(provider);
