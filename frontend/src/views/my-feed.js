@@ -25,6 +25,7 @@ class myFeed extends PolymerElement {
     this.pStart = { x: 0, y: 0 };
     this.pStop = { x: 0, y: 0 };
     this.loader = document.querySelectorAll('my-app')[0].shadowRoot.getElementById("loader");
+    this.refreshed = false;
   }
 
   static get properties() {
@@ -120,6 +121,7 @@ class myFeed extends PolymerElement {
     if (this.isPullDown(changeY, changeX)) {
       document.body.classList.add('refreshing')
       this.addLoading();
+      this.refreshed = true;
       this.loadContentCacheFirst();
     }
   }
@@ -198,6 +200,10 @@ class myFeed extends PolymerElement {
     let body = document.querySelector('body');
     if (body.classList.contains('refreshing')) {
       body.classList.remove('refreshing');
+    }
+    if(this.refreshed){
+      this.refreshed = false;
+      this.toast('updated');
     }
   }
 
@@ -437,6 +443,8 @@ class myFeed extends PolymerElement {
 
       <paper-toast id="toast-something-wrong" class="fit-bottom toast-error" duration="5000" text="Something went wrong! :O Please try refreshing after a few seconds."></paper-toast>
 
+      <paper-toast id="toast-updated" class="fit-bottom toast-succes" duration="3000" text="Data has been updated :)"></paper-toast>
+
       <custom-style><style is="custom-style">
         .toast-error {
           --paper-toast-background-color: #B71C1C;
@@ -451,6 +459,10 @@ class myFeed extends PolymerElement {
           margin-top: 10px;
           color: white;
           --paper-button-ink-color: #f3f3f3;
+        }
+        .toast-succes{
+          --paper-toast-background-color: #43A047;
+          -paper-toast-color: white;
         }
       </style></custom-style>
     `;
