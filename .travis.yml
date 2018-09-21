@@ -5,11 +5,11 @@ dist: trusty
 jobs:
   include:
     - stage: test
-      script: ./test 1
+      script: ./.travis/test 1
     - # stage name not required, will continue to use `test`
-      script: ./test 1
+      script: ./.travis/test 1
     - stage: deploy
-      script: ./test 1
+      script: ./.travis/test 1
 # before_script:
 # - npm list -g polymer-cli --depth=0 || npm install -g polymer-cli
 # - npm list -g firebase-tools --depth=0 || npm install -g firebase-tools
