@@ -115,10 +115,10 @@ class myFeed extends PolymerElement {
     this.swipeCheck();
   }
 
-  swipeCheck() {
+  swipeCheck() { 
     var changeY = this.pStart.y - this.pStop.y;
     var changeX = this.pStart.x - this.pStop.x;
-    if (this.isPullDown(changeY, changeX)) {
+    if (this.isPullDown(changeY, changeX) && (window.location.href.endsWith('feed'))) {
       document.body.classList.add('refreshing')
       this.addLoading();
       this.refreshed = true;
