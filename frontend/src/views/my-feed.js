@@ -22,6 +22,10 @@ class myFeed extends PolymerElement {
     myFeed.dbPromise = this.createIDB();
     this.loadContentCacheFirst();
     this.addLoading();
+    this.pStart = { x: 0, y: 0 };
+    this.pStop = { x: 0, y: 0 };
+    this.loader = document.querySelectorAll('my-app')[0].shadowRoot.getElementById("loader");
+    this.refreshed = false;
   }
 
   static get properties() {
@@ -76,7 +80,60 @@ class myFeed extends PolymerElement {
     }).catch(function (error) {
       console.log('Error getting access_token');
     });
+    // Bind event listeners for refresh handling
+    window.addEventListener('touchstart', this._swipeStart.bind(this));
+    window.addEventListener('touchend', this._swipeEnd.bind(this));
   }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    window.removeEventListener('touchstart', this._swipeStart);
+    window.removeEventListener('touchend', this._swipeEnd);
+  }
+
+  _swipeStart(event) {
+    if (typeof event['targetTouches'] !== "undefined") {
+      var touch = event.targetTouches[0];
+      this.pStart.x = touch.screenX;
+      this.pStart.y = touch.screenY;
+    } else {
+      this.pStart.x = event.screenX;
+      this.pStart.y = event.screenY;
+    }
+  }
+
+  _swipeEnd(event) {
+    if (typeof event['changedTouches'] !== "undefined") {
+      var touch = event.changedTouches[0];
+      this.pStop.x = touch.screenX;
+      this.pStop.y = touch.screenY;
+    } else {
+      this.pStop.x = event.screenX;
+      this.pStop.y = event.screenY;
+    }
+
+    this.swipeCheck();
+  }
+
+  swipeCheck() { 
+    var changeY = this.pStart.y - this.pStop.y;
+    var changeX = this.pStart.x - this.pStop.x;
+    if (this.isPullDown(changeY, changeX) && (window.location.href.endsWith('feed'))) {
+      document.body.classList.add('refreshing')
+      this.addLoading();
+      this.refreshed = true;
+      this.loadContentCacheFirst();
+    }
+  }
+
+  isPullDown(dY, dX) {
+    // methods of checking slope, length, direction of line created by swipe action 
+    return dY < 0 && (
+      (Math.abs(dX) <= 100 && Math.abs(dY) >= 300)
+      || (Math.abs(dX) / Math.abs(dY) <= 0.3 && dY >= 60)
+    );
+  }
+
 
   /* 
   *  Make sure network content is loaded first,
@@ -86,7 +143,7 @@ class myFeed extends PolymerElement {
     this.loadLocally().then(offlineData => {
       if (!offlineData.length) {
         this.loadFromNetwork();
-      } else {
+      } else { 
         this.shows = offlineData;
         this.rendered = true;
         this.loadFromNetwork();
@@ -138,13 +195,26 @@ class myFeed extends PolymerElement {
 
   loadingDone() {
     this.rendered = true;
-    let loader = document.querySelectorAll('my-app')[0].shadowRoot.getElementById("loader");
-    loader.addEventListener('animationiteration', function () {
-      loader.classList.remove('anim');
-    })
-    loader.addEventListener('webkitAnimationIteration', function () {
-      loader.classList.remove('anim');
-    })
+    this.loader.addEventListener('animationiteration',  this._handleAnimationStop.bind(this));
+    this.loader.addEventListener('webkitAnimationIteration',  this._handleAnimationStop.bind(this));
+    let body = document.querySelector('body');
+    if (body.classList.contains('refreshing')) {
+      body.classList.remove('refreshing');
+    }
+    if(this.refreshed){
+      this.refreshed = false;
+      this.toast('updated');
+    }
+  }
+
+  _handleAnimationStop(){
+    this.loader.classList.remove('anim');
+    // Hack to remove the event listener,
+    // by replacing the element with itself.
+    let old_element = this.loader;
+    let new_element = old_element.cloneNode(true);
+    old_element.parentNode.replaceChild(new_element, old_element);
+    this.loader = new_element;
   }
 
   /* Call API and return JSON data of the shows */
@@ -353,6 +423,13 @@ class myFeed extends PolymerElement {
         <mwc-icon class="arrow_back" >add</mwc-icon>
       </a>
 
+      <div class="refresher">
+        <div class="loading-bar"></div>
+        <div class="loading-bar"></div>
+        <div class="loading-bar"></div>
+        <div class="loading-bar"></div>
+      </div>
+
       <!-- Toast messages -->
       <paper-toast id="toast-offline" class="fit-bottom toast-warning" duration="4000" text="You're offline and seeing local data."></paper-toast>
         
@@ -365,6 +442,8 @@ class myFeed extends PolymerElement {
       </paper-toast>
 
       <paper-toast id="toast-something-wrong" class="fit-bottom toast-error" duration="5000" text="Something went wrong! :O Please try refreshing after a few seconds."></paper-toast>
+
+      <paper-toast id="toast-updated" class="fit-bottom toast-succes" duration="3000" text="Data has been updated :)"></paper-toast>
 
       <custom-style><style is="custom-style">
         .toast-error {
@@ -380,6 +459,10 @@ class myFeed extends PolymerElement {
           margin-top: 10px;
           color: white;
           --paper-button-ink-color: #f3f3f3;
+        }
+        .toast-succes{
+          --paper-toast-background-color: #43A047;
+          -paper-toast-color: white;
         }
       </style></custom-style>
     `;
