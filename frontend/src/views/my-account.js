@@ -1,12 +1,12 @@
-import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
-import '@polymer/paper-button/paper-button.js';
+import { LitElement, html } from '../../node_modules/@polymer/lit-element';
 
-import '../style/shared-styles.js';
+import { styles } from '../style/main-style.js';
 
-class MyAccount extends PolymerElement {
-  static get template() {
+class MyAccount extends LitElement {
+  render() {
     return html`
-      <style include="shared-styles">
+      ${styles}
+      <style>
         :host {
           display: block;
         }
@@ -47,27 +47,28 @@ class MyAccount extends PolymerElement {
   
       <div class="spacer"></div>
 
-      <template is="dom-if" if="{{currentUser}}">
-        <div class="card">
-          <div class="center">
-            <img class="profile-img" src="{{currentUser.photoURL}}" alt="Profile picture of {{currentUser.displayName}}">
-          </div>
-          <div class="center">
-            <p class="user-name">{{currentUser.displayName}}</p>
-          </div>
-          <div class="center">
-            <paper-button class="custom" on-click="_signOut">Sign out</paper-button>
-            <custom-style>
-              <style>
-                paper-button.custom {
-                  color: #B71C1C;
-                  --paper-button-ink-color: #f3f3f3;
-                }
-              </style>
-            </custom-style>
-          </div>
-        </div>
-      </template>
+       ${this.currentUser
+          ? html`<div class="card">
+                  <div class="center">
+                    <img class="profile-img" src="${this.currentUser.photoURL}" alt="Profile picture of ${this.currentUser.displayName}">
+                  </div>
+                  <div class="center">
+                    <p class="user-name">${this.currentUser.displayName}</p>
+                  </div>
+                  <div class="center">
+                    <paper-button class="custom" @click="${() => this._signOut()}">Sign out</paper-button>
+                    <custom-style>
+                      <style>
+                        paper-button.custom {
+                          color: #B71C1C;
+                          --paper-button-ink-color: #f3f3f3;
+                        }
+                      </style>
+                    </custom-style>
+                  </div>
+                </div>`
+          : html``
+       }
  
     `;
   }
