@@ -1,6 +1,7 @@
 import { LitElement, html } from '../../node_modules/@polymer/lit-element';
 
 import { styles } from '../style/main-style.js';
+import { feedStyle } from '../style/feed-style.js';
 
 import { Icon } from "@material/mwc-icon";
  
@@ -198,7 +199,7 @@ class myFeed extends LitElement {
         <div class="card feed-item" @click="${(e) => this._showDetails(e)}">
 
           <div class="header-img">
-            <img src="https://www.thetvdb.com/banners/fanart/original/${items[i].serieid}-2.jpg" alt="Serie banner">
+            <img class="lazy" src="/images/placeholder.jpg" data-src="https://www.thetvdb.com/banners/fanart/original/${items[i].serieid}-1.jpg" alt="Serie Banner">
           </div>
 
           <div class="basic-info">
@@ -224,7 +225,7 @@ class myFeed extends LitElement {
             <div class="divider"></div>
             <p class="episode-title">${items[i].episodename}</p>
             <p>${items[i].episodedescription}</p>
-            <a href="${items[i].calendarlink}" target="_blank" class="add-calendar">
+            <a href="${items[i].calendarlink}" target="_blank" rel="noopener" class="add-calendar">
               <mwc-icon>add</mwc-icon>
               <p>Add to Google Calendar</p>
             </a>
@@ -390,9 +391,7 @@ class myFeed extends LitElement {
   render() {
     return html`
       ${styles}
-
-      <link rel="stylesheet" href="/src/style/skeleton.css">
-      <link rel="stylesheet" href="/src/style/feed-style.css">
+      ${feedStyle}
 
       ${this.rendered 
         ? html`<div id="cards-container">
@@ -477,6 +476,11 @@ class myFeed extends LitElement {
         i.classList.remove('open');
       });
       card.classList.add('open');
+      if(card.querySelector('.lazy')){
+        let lazyImage = card.querySelector('.lazy');
+        lazyImage.src = lazyImage.dataset.src;
+        lazyImage.classList.remove("lazy");
+      }
     }
   }
 

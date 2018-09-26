@@ -159,7 +159,7 @@ class MyApp extends PolymerElement {
           <app-header slot="header" fixed condenses="" reveals="" effects="waterfall">
             <app-toolbar>
               <template is="dom-if" if="[[!login]]">
-                <paper-icon-button icon="my-icons:menu" drawer-toggle=""></paper-icon-button>
+                <paper-icon-button aria-label="Close or open menu" icon="my-icons:menu" drawer-toggle=""></paper-icon-button>
               </template>
               <div main-title="">Super TV Guide</div>
             </app-toolbar>
@@ -255,7 +255,7 @@ class MyApp extends PolymerElement {
         import('./views/my-feed.js');
         break;
       case 'watchlist':
-      this.login = false;
+        this.login = false;
         import('./views/my-watchlist.js');
         break;
       case 'account':
