@@ -17,7 +17,9 @@
         "minify": true
       },
       "css": {
-        "minify": true
+        "minify": true,
+        "compile": true,
+        "transformModulesToAmd": true
       },
       "html": {
         "minify": true
