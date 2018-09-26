@@ -63,9 +63,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <!-- Safari Pinned Tab -->
   <link rel="mask-icon" href="/images/manifest/safari-pinned-tab.svg" color="#b71c1c">
 
-  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <!-- Firebase App is always required and must be first -->
+  <script src="https://www.gstatic.com/firebasejs/5.5.0/firebase-app.js"></script>
 
-  <script src="https://www.gstatic.com/firebasejs/5.5.0/firebase.js"></script>
+  <!-- Add additional services that you want to use -->
+  <script async src="https://www.gstatic.com/firebasejs/5.5.0/firebase-auth.js"></script>
+
   <script>
     // Initialize Firebase
     var config = {
@@ -130,6 +133,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       /* prevent scrolling */
     }
   </style>
+
 </head>
 
 <body>
@@ -139,5 +143,4 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </noscript>
   <!-- Built with love using Polymer Starter Kit -->
 </body>
-
 </html>

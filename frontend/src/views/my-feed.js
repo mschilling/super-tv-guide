@@ -1,6 +1,7 @@
 import { LitElement, html } from '../../node_modules/@polymer/lit-element';
 
 import { styles } from '../style/main-style.js';
+import { feedStyle } from '../style/feed-style.js';
 
 import { Icon } from "@material/mwc-icon";
  
@@ -152,7 +153,8 @@ class myFeed extends LitElement {
   }
 
   async loadFromNetwork() {
-    let user = await this.getUser();
+    //let user = await this.getUser();
+    let user = '';
     this.getShows(user)
       .then(dataFromNetwork => {
         this.giveResponse(dataFromNetwork);
@@ -224,7 +226,7 @@ class myFeed extends LitElement {
             <div class="divider"></div>
             <p class="episode-title">${items[i].episodename}</p>
             <p>${items[i].episodedescription}</p>
-            <a href="${items[i].calendarlink}" target="_blank" class="add-calendar">
+            <a href="${items[i].calendarlink}" target="_blank" rel="noopener" class="add-calendar">
               <mwc-icon>add</mwc-icon>
               <p>Add to Google Calendar</p>
             </a>
@@ -262,11 +264,11 @@ class myFeed extends LitElement {
 
   /* Call API and return JSON data of the shows */
   getShows(user) {
-    if (!user) {
-      throw Error("User not found");
-    }
+    // if (!user) {
+    //   throw Error("User not found");
+    // }
 
-    var request = `https://us-central1-super-tv-guide.cloudfunctions.net/api/api/user/${user.uid}/feed`;
+    var request = `https://us-central1-super-tv-guide.cloudfunctions.net/api/api/user/TNHDA7r0lgTXWo1OAohFvYvwgBh2/feed`;
 
     return fetch(request).then(response => {
       if (!response.ok) {
@@ -390,9 +392,7 @@ class myFeed extends LitElement {
   render() {
     return html`
       ${styles}
-
-      <link rel="stylesheet" href="/src/style/skeleton.css">
-      <link rel="stylesheet" href="/src/style/feed-style.css">
+      ${feedStyle}
 
       ${this.rendered 
         ? html`<div id="cards-container">
