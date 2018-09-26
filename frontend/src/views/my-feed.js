@@ -1,36 +1,33 @@
-// Import the Polymer library and the html helper function
-import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
+import { LitElement, html } from '../../node_modules/@polymer/lit-element';
 
-// Import template repeater
-import '@polymer/polymer/lib/elements/dom-repeat.js';
+import { styles } from '../style/main-style.js';
 
-import '../style/shared-styles.js';
-
-import { Icon } from "@material/mwc-icon"
-
-import '@polymer/paper-toast/paper-toast.js';
-import '@polymer/paper-button/paper-button.js';
+import { Icon } from "@material/mwc-icon";
+ 
+import '../../node_modules/@polymer/paper-toast/paper-toast.js';
 
 
 // Import IDB
 import '../js/idb-promised.js';
 
-class myFeed extends PolymerElement {
+class myFeed extends LitElement {
 
   constructor() {
     super();
+    this.rendered = false;
+    this.addLoading();
     myFeed.dbPromise = this.createIDB();
     this.loadContentCacheFirst();
-    this.addLoading();
-    this.pStart = { x: 0, y: 0 };
-    this.pStop = { x: 0, y: 0 };
+    myFeed.cards = [];
     this.loader = document.querySelectorAll('my-app')[0].shadowRoot.getElementById("loader");
     this.refreshed = false;
+    this.pStart = { x: 0, y: 0 };
+    this.pStop = { x: 0, y: 0 };
   }
 
   static get properties() {
     return {
-      shows: {
+      cards: {
         type: Array,
         value() {
           return [];
@@ -143,8 +140,8 @@ class myFeed extends PolymerElement {
     this.loadLocally().then(offlineData => {
       if (!offlineData.length) {
         this.loadFromNetwork();
-      } else { 
-        this.shows = offlineData;
+      } else {
+        this.updateFeed(offlineData)
         this.rendered = true;
         this.loadFromNetwork();
       }
@@ -161,7 +158,7 @@ class myFeed extends PolymerElement {
         this.giveResponse(dataFromNetwork);
         this.saveLocally(dataFromNetwork)
           .then(() => {
-            this.shows = dataFromNetwork;
+            this.updateFeed(dataFromNetwork);
             this.loadingDone();
           }).catch(err => {
             console.log("Could not save data. This is expected if the user has no series or no data could be retrieved.");
@@ -193,6 +190,52 @@ class myFeed extends PolymerElement {
     document.querySelectorAll('my-app')[0].shadowRoot.getElementById("loader").classList.add('anim');
   }
 
+  updateFeed(items) {
+    myFeed.cards = []; 
+    for(let i = 0; i < items.length; i++){
+      myFeed.cards.push(
+        html`
+        <div class="card feed-item" @click="${(e) => this._showDetails(e)}">
+
+          <div class="header-img">
+            <img src="https://www.thetvdb.com/banners/fanart/original/${items[i].serieid}-2.jpg" alt="Serie banner">
+          </div>
+
+          <div class="basic-info">
+            <p class="date-written">${this.getDay(items[i].episodereleasedate)}</p>
+            <p class="serie-name">${items[i].seriename}</p>
+            <div class="divider"></div>
+            <div class="row">
+              <div>
+                <mwc-icon>calendar_today</mwc-icon>
+                <p class="date go-up">${this.formatDate(items[i].episodereleasedate)}</p>
+              </div>
+              <div>
+                <mwc-icon>access_time</mwc-icon>
+                <p class="go-up">${items[i].episodereleasetime}</p>
+              </div>
+              <div>
+                <p class="se">S${items[i].seasonnumber}E${items[i].episodenumber}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="description">
+            <div class="divider"></div>
+            <p class="episode-title">${items[i].episodename}</p>
+            <p>${items[i].episodedescription}</p>
+            <a href="${items[i].calendarlink}" target="_blank" class="add-calendar">
+              <mwc-icon>add</mwc-icon>
+              <p>Add to Google Calendar</p>
+            </a>
+          </div>
+
+        </div>
+        `
+      )
+    };
+  }
+
   loadingDone() {
     this.rendered = true;
     this.loader.addEventListener('animationiteration',  this._handleAnimationStop.bind(this));
@@ -207,7 +250,7 @@ class myFeed extends PolymerElement {
     }
   }
 
-  _handleAnimationStop(){
+  _handleAnimationStop() {
     this.loader.classList.remove('anim');
     // Hack to remove the event listener,
     // by replacing the element with itself.
@@ -344,91 +387,43 @@ class myFeed extends PolymerElement {
     this.shadowRoot.getElementById(`toast-${item}`).open();
   }
 
-  static get template() {
+  render() {
     return html`
-        <style include="shared-styles">
-          :host {
-            display: block;
-          }
-      </style>
+      ${styles}
 
       <link rel="stylesheet" href="/src/style/skeleton.css">
       <link rel="stylesheet" href="/src/style/feed-style.css">
 
-      <template is="dom-if" if="{{!rendered}}">
-        <div id="cards-container">
-          <div class="card feed-item skeleton"></div>
-          <div class="card feed-item skeleton"></div>
-          <div class="card feed-item skeleton"></div>
-          <div class="card feed-item skeleton"></div>
-          <div class="card feed-item skeleton"></div>
-        </div>
-      </template>
+      ${this.rendered 
+        ? html`<div id="cards-container">
+                  ${myFeed.cards}
+              </div>`
+        : html`<div id="cards-container">
+                <div class="card feed-item skeleton"></div>
+                <div class="card feed-item skeleton"></div>
+                <div class="card feed-item skeleton"></div>
+                <div class="card feed-item skeleton"></div>
+                <div class="card feed-item skeleton"></div>
+              </div>`
+        }
 
-      <div id="cards-container">
-        <template is="dom-repeat" items="{{shows}}">
+       ${this.noData
+          ? html`<div class="error-container">
+                  <mwc-icon>error_outline</mwc-icon>
+                </div>`
+          : html``
+       }
 
-          <div class="card feed-item" on-click="showDetails">
+       ${this.noSeries
+          ? html`<div class="error-container">
+                    <mwc-icon>sentiment_dissatisfied</mwc-icon>
+                </div>`
+          : html``
+       }
 
-            <div class="header-img">
-              <img src="https://www.thetvdb.com/banners/fanart/original/[[item.serieid]]-2.jpg" alt="Serie banner">
-            </div>
-
-            <div class="basic-info">
-              <p class="date-written">[[getDay(item.episodereleasedate)]]</p>
-              <p class="serie-name">[[item.seriename]]</p>
-              <div class="divider"></div>
-                <div class="row">
-                  <div>
-                    <mwc-icon>calendar_today</mwc-icon>
-                    <p class="date go-up">[[formatDate(item.episodereleasedate)]]</p>
-                  </div>
-                  <div>
-                    <mwc-icon>access_time</mwc-icon>
-                    <p class="go-up">[[item.episodereleasetime]]</p>
-                  </div>
-                  <div>
-                    <p class="se">S[[item.seasonnumber]]E[[item.episodenumber]]</p>
-                  </div>
-                </div>
-              </div>
-
-              <div class="description">
-                  <div class="divider"></div>
-                  <p class="episode-title">[[item.episodename]]</p>
-                  <p>[[item.episodedescription]]</p>
-                  <a href="[[item.calendarlink]]" target="_blank" class="add-calendar"><mwc-icon>add</mwc-icon><p>Add to Google Calendar</p></a>
-              </div>
-
-            </div>
-
-          </div>
-
-        </template>
-      </div>
-
-      <template is="dom-if" if="{{noData}}">
-          <div class="error-container">
-            <mwc-icon>error_outline</mwc-icon>
-          </div>
-      </template>
-
-      <template is="dom-if" if="{{noSeries}}">
-          <div class="error-container">
-            <mwc-icon>sentiment_dissatisfied</mwc-icon>
-          </div>
-      </template>
-
-      <a id="add-btn" class="floating-btn" href="[[rootPath]]watchlist">
+      <a id="add-btn" class="floating-btn" href="/watchlist">
         <mwc-icon class="arrow_back" >add</mwc-icon>
       </a>
-
-      <div class="refresher">
-        <div class="loading-bar"></div>
-        <div class="loading-bar"></div>
-        <div class="loading-bar"></div>
-        <div class="loading-bar"></div>
-      </div>
 
       <!-- Toast messages -->
       <paper-toast id="toast-offline" class="fit-bottom toast-warning" duration="4000" text="You're offline and seeing local data."></paper-toast>
@@ -468,7 +463,7 @@ class myFeed extends PolymerElement {
     `;
   }
 
-  showDetails(e) {
+  _showDetails(e) {
     let myFeed = document.querySelectorAll('my-app')[0].shadowRoot.querySelectorAll('my-feed')[0].shadowRoot;
     let card = e.currentTarget;
     if (card.classList.contains('open')) {

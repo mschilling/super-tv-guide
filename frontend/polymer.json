@@ -14,12 +14,12 @@
     {
       "name": "es5-bundled",
       "js": {
+        "minify": true
+      },
+      "css": {
         "minify": true,
         "compile": true,
         "transformModulesToAmd": true
-      },
-      "css": {
-        "minify": true
       },
       "html": {
         "minify": true
