@@ -153,8 +153,7 @@ class myFeed extends LitElement {
   }
 
   async loadFromNetwork() {
-    //let user = await this.getUser();
-    let user = '';
+    let user = await this.getUser();
     this.getShows(user)
       .then(dataFromNetwork => {
         this.giveResponse(dataFromNetwork);
@@ -200,7 +199,7 @@ class myFeed extends LitElement {
         <div class="card feed-item" @click="${(e) => this._showDetails(e)}">
 
           <div class="header-img">
-            <img class="lazy" src="/images/placeholder.jpg" data-src="https://www.thetvdb.com/banners/fanart/original/${items[i].serieid}-2.jpg" alt="Serie Banner">
+            <img class="lazy" src="/images/placeholder.jpg" data-src="https://www.thetvdb.com/banners/fanart/original/${items[i].serieid}-1.jpg" alt="Serie Banner">
           </div>
 
           <div class="basic-info">
@@ -264,11 +263,11 @@ class myFeed extends LitElement {
 
   /* Call API and return JSON data of the shows */
   getShows(user) {
-    // if (!user) {
-    //   throw Error("User not found");
-    // }
+    if (!user) {
+      throw Error("User not found");
+    }
 
-    var request = `https://us-central1-super-tv-guide.cloudfunctions.net/api/api/user/TNHDA7r0lgTXWo1OAohFvYvwgBh2/feed`;
+    var request = `https://us-central1-super-tv-guide.cloudfunctions.net/api/api/user/${user.uid}/feed`;
 
     return fetch(request).then(response => {
       if (!response.ok) {

@@ -211,10 +211,10 @@ class MyApp extends PolymerElement {
     firebase.auth().onAuthStateChanged((currentUser) => {
       if (currentUser) {
         // <user is signed in>
-        //this.user = currentUser;
+        this.user = currentUser;
       }else{
-        //this.user = {};
-        //this.page = 'login';
+        this.user = {};
+        this.page = 'login';
       }
     })
   }
