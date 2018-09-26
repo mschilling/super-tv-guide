@@ -13,6 +13,9 @@
   "builds": [
     {
       "name": "es5-bundled",
+      "js": {
+        "minify": true
+      },
       "css": {
         "minify": true
       },
