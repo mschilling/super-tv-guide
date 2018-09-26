@@ -200,7 +200,7 @@ class myFeed extends LitElement {
         <div class="card feed-item" @click="${(e) => this._showDetails(e)}">
 
           <div class="header-img">
-            <img src="https://www.thetvdb.com/banners/fanart/original/${items[i].serieid}-2.jpg" alt="Serie banner">
+            <img class="lazy" src="/images/placeholder.jpg" data-src="https://www.thetvdb.com/banners/fanart/original/${items[i].serieid}-2.jpg" alt="Serie Banner">
           </div>
 
           <div class="basic-info">
@@ -477,6 +477,11 @@ class myFeed extends LitElement {
         i.classList.remove('open');
       });
       card.classList.add('open');
+      if(card.querySelector('.lazy')){
+        let lazyImage = card.querySelector('.lazy');
+        lazyImage.src = lazyImage.dataset.src;
+        lazyImage.classList.remove("lazy");
+      }
     }
   }
 
